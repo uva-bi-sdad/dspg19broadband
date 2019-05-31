@@ -2,7 +2,7 @@
 title: "Broadband data comparison"
 author: "Josh Goldstein, Teja Pristavec, Kateryna Savchyn"
 date: "5/31/2019"
-output: html_document
+output: github_document
 ---
 
 ```{r setup, include=FALSE}
