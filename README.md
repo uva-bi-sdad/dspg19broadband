@@ -2,7 +2,7 @@
 title: "HDSPG 2019 Broadband"
 author: "Josh Goldstein, Teja Pristavec, Kateryna Savchyn"
 date: Summer 2019
-output: html_document
+output: github_document
 ---
 
 # Project structure
