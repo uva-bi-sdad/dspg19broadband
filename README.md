@@ -1,4 +1,4 @@
-HDSPG 2019 Broadband
+DSPG 2019 Broadband
 ================
 Josh Goldstein, Teja Pristavec, Kateryna Savchyn
 Summer 2019
