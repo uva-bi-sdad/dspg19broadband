@@ -1,14 +1,21 @@
+---
+title: "HDSPG 2019 Broadband"
+author: "Josh Goldstein, Teja Pristavec, Kateryna Savchyn"
+date: Summer 2019
+output: github_document
+---
+
 # Project structure
 
-The DATA directory is a symlink to data used in the analysis. 
+The `DATA` directory is a symlink to data used in the analysis. 
 The "original" sub-folder is a read-only directory, and R should never write files here. 
 Put processed datasets in "Working" and "Final" sub-folders as appropriate.
 
-The SRC directory contains source code. 
+The `SRC` directory contains source code. 
 
-The OUTPUT directory contains  simuation output, logs, and other interim products.
+The `OUTPUT` directory contains  simuation output, logs, and other interim products.
 
-The DOC directory contains any report-type output.
+The `DOC` directory contains any report-type output.
 Markdown, LaTeX, Notebooks, etc. files go here.
 
-The FIGS directory contains generated figures.
+The `FIGS` directory contains generated figures.
