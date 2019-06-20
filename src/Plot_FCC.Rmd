@@ -1,0 +1,57 @@
+---
+title: "FCC_Plot"
+author: "Kateryna Savchyn"
+date: "6/20/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# read in packages
+```{r packages}
+for (pkg in c("httr", "here", "maptools","gpclib","sp", 'sf', 'ggplot2', 'ggmap', 'osmdata', 'tidyverse', 'tigris', 'acs')) {
+  library(pkg, character.only = TRUE)
+}
+```
+
+# parse block number into state,  county, tract, block-group to enable join with census block group shapefiles
+
+```{r fcc}
+destfile <- here("data", "original", "FCC", "fcc_477.csv")
+sp <- read.csv(destfile)
+sp$state <- 
+```
+
+```{r join with shapefile info}
+destfile  <- here("data", "original", "Census Blocks", )
+shapefile <- st_read()
+```
+
+
+```{r put it on a map}
+arlington.box <- getbb("arlington county")
+arlington.map <- get_map(location = arlington.box, source="stamen", maptype="watercolor", crop = TRUE)
+arlington.boundary <- getbb("arlington county", format_out = "polygon") %>%
+                      as.tibble() %>%
+                      rename(longitude = `V1`, latitude = `V2`)
+arlington.rests <- complete %>% as.tibble()
+
+ggmap(arlington.map) +
+  geom_polygon(data = arlington.boundary, aes(x = longitude, y = latitude), colour = "black", size = 1, alpha = 0.1) + 
+  geom_point(data = arlington.rests, aes(x = lon, y = lat, fill = status), size = 3, pch = 21)  +
+  scale_fill_manual(values=c("Included in API layer"="blue","Not Accredited in API layer"="pink", "Not present in API layer" = "orange")) +
+  #geom_text(data = arlington.rests, aes(label=ifelse(outside = TRUE,name),size = 3, hjust=0, vjust=0) +
+  geom_polygon(data = myCircles1, aes(lon, lat, group = ID), color = "firebrick1", size = 1.5, alpha = 0) +
+  geom_polygon(data = myCircles2, aes(lon, lat, group = ID), color = "firebrick3", size = 1, alpha = 0) + 
+  geom_polygon(data = myCircles3, aes(lon, lat, group = ID), color = "firebrick4", size = 1, alpha = 0) +
+  labs(x = "Longitude",y = "Latitude") 
+ggsave("~/acpd/figures/ari_boundary.png")
+```
+
+```{r tigris}
+# TRACT -> BLOCKGROUP 3 -> 3000-3999
+blocks <- st_read('https://opendata.arcgis.com/datasets/cde2b42d0da24de9b1bf7d7e178f3d83_2.geojson')
+plot(blocks['COUNTY'])
+```

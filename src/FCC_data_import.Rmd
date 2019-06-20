@@ -56,13 +56,15 @@ service_map()
 
 ```{r census tracts}
 state_blocks <- function(fips) {
-  destzip <- here("data", "original", "Census Blocks",  '%s_census_blocks')
-  destfile<- here("data", "original", "Census Blocks", sprintf('%s_census_blocks', fips))
-  if (!file.exists(destfile)) {
+  destzip <- here("data", "original", "Census Blocks",  sprintf('%s_census_blocks.zip', fips))
+  destdir<- here("data", "original", "Census Blocks", sprintf('%s_census_blocks', fips))
+  if (!dir.exists(destfile)) {
+    dir.create(destdir)
     download.file(url = sprintf('https://www2.census.gov/geo/tiger/TIGER2018/BG/tl_2018_%s_bg.zip', fips),
                   destfile = destzip)
   }
   unzip(destzip, exdir = destfile)
+  file.remove(destzip)
 }
 
 
