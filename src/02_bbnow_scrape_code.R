@@ -68,9 +68,6 @@ for (val_i in 1:length(url_list)) {
 }
 
 
-#
-#------------------------------------ Merge and clean
-#
 
 # Make a list of dataframes and bind
 dflist <- lapply(ls(pattern = "frame_"), function(x) if (class(get(x)) == "data.frame") get(x))
