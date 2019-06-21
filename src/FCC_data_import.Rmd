@@ -17,19 +17,24 @@ Type: CSV
 
 
 ```{r fcc 477, message=FALSE}
-for (pkg in c("httr", "here", "maptools","gpclib","sp", 'sf', 'ggplot2', 'ggmap', 'osmdata', 'tidyverse', 'tigris', 'acs')) {
+for (pkg in c("httr", "here", "maptools","gpclib","sp", 'sf', 'ggplot2', 'ggmap', 'osmdata', 'tidyverse', 'tigris', 'acs', "RSocrata")) {
   library(pkg, character.only = TRUE)
 }
 
-fcc_477 <- function() {
-  destfile <- here("data", "original", "FCC","fcc_477.csv")
+fcc_477 <- function(state) {
+  destfile <- here("data", "original", "FCC",sprintf('fcc_477_%s.csv', state))
   if (!file.exists(destfile)) {
-    download.file(url = "https://opendata.fcc.gov/resource/ei6b-6aiz.csv",
-                  destfile = destfile)
+    df <- read.socrata(
+  sprintf("https://opendata.fcc.gov/resource/ei6b-6aiz.csv?stateabbr=%s",state),
+  app_token = Sys.getenv("fcc_app_token"),
+  email     = "ksvchn@gmail.com",
+  password  = Sys.getenv("fcc_api_pwd")
+)
+  write.csv(df,  destfile)
   }
 }
 
-fcc_477()
+# fcc_477('VT')
 
 ```
 
