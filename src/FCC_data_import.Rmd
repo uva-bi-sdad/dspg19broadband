@@ -34,7 +34,7 @@ fcc_477 <- function(state) {
   }
 }
 
-# fcc_477('VT')
+fcc_477('VA')
 
 ```
 
