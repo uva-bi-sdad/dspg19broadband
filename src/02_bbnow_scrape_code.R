@@ -19,7 +19,7 @@ uscities <- read.csv("./data/working/uscities.csv")
 
 #Subsetting just 1 zip code per city
 myuscities <- uscities[c(1,3:10)]
-
+head(myuscities)
 state_names <- myuscities$statename
 
 city_names <- myuscities$city
