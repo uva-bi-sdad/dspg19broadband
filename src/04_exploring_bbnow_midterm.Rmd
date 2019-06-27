@@ -23,7 +23,7 @@ library(DataExplorer)
 
 ```{r}
 
-bbnow <- read.csv("./data/working/bbnow_cities.csv")
+bbnow <- read.csv("bbnow_cities.csv")
 uscity <- read.csv("./data/working/uscities.csv")
 uscities <- uscity[c(1,3:10)]
 #head(bbnow)
