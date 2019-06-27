@@ -97,12 +97,25 @@ ggplot(fcc_va_w_geo_sf2) +
 
 ```{r add block pop}
 dest <- here("data", "working", "population_by_census_block_2010.csv")
-pop <- read.csv(dest)
+pop <- fread(dest)
+
+# join pop and sf
+sp_g3 <- merge(sp, pop,  by.x = 'blockcode', by.y = 'GEOID')
+
+# if at least one provider has it, block gets a 1 else 0
+sp_g3 <- sp_g3[, .(num_ppl_20_ad = ifelse(sum(ad_25)>0,sum(value),0), num_ppl_20_cir = ifelse(sum(cir_25)>0,sum(value),0)), .(blockcode)]
+sp_g3[, GEOID_str := substr(as.character(blockcode), 1, 12)]
+
+# look at % of poeple in the block group (so total people across blocks with a 1)
+sp_g3 <- sp_g3[, .(total_ppl = sum(value), sum_ad = sum(num_ppl_20_ad), sum_cir = sum(num_ppl_20_cir)), .(GEOID_str)]
+sp_g3 %>% dt_mutate(percent_ad = (sum_ad /num_bl)*100, percent_cir = (sum_cir/num_bl)*100)
 
 ```
 
 ```{r no internet}
 
-sp_g1 <- sp[, .(block_pop = ifelse(sum(ad_25)>0,1,0), num_providers_20_cir = ifelse(sum(cir_25)>0,1,0)), .(blockcode)]
 
 ```
+
+
+
