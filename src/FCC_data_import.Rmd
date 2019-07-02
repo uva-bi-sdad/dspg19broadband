@@ -88,27 +88,27 @@ state_blocks(51)
 ```{r previous years - fcc}
 ## Tried and failed - historic files are corrupt
 
-# links <- c('http://transition.fcc.gov/form477/BroadbandData/Fixed/Dec16/Version%202/US-Fixed-without-satellite-Dec2016.zip','http://transition.fcc.gov/form477/BroadbandData/Fixed/Dec15/Version%204/US-Fixed-without-Satellite-Dec2015.zip','http://transition.fcc.gov/form477/BroadbandData/Fixed/Dec14/Version%203/US-Fixed-without-Satellite-Dec2014.zip')
-# 
-# links2 <- c('http://transition.fcc.gov/form477/BroadbandData/Fixed/Jun16/Version%202/US-Fixed-without-Satellite-Jun2016.zip', 
-#                 'http://transition.fcc.gov/form477/BroadbandData/Fixed/Jun15/Version%204/US-Fixed-without-Satellite-Jun2015.zip', 
-#                 'http://transition.fcc.gov/form477/BroadbandData/Fixed/Dec14/Version2/US-Fixed-without-Satellite-Dec2014.zip')
-# 
-# years <- c(2016, 2015, 2014)
-# 
-# df <- as.data.frame(cbind(years, links, links2))
-# 
-# fcc_history <- function(year){
-#   destzip <- here("data", "original", "FCC", "FCC_Historic",  sprintf('%s_fcc.zip', year))
-#   destfolder<- here("data", "original", "FCC", "FCC_Historic", sprintf('%s_fcc', year))
-#   if (!file.exists(destzip)) {
-#     download.file(url = as.character(df$links2[df$year == year]),
-#                   destfile = destzip, mode = 'wb')
-#   }
-#   unzip(destzip, exdir = destfolder)
-# }
-  
-# fcc_history(2014) 
+links <- c('http://transition.fcc.gov/form477/BroadbandData/Fixed/Dec16/Version%202/US-Fixed-without-satellite-Dec2016.zip','http://transition.fcc.gov/form477/BroadbandData/Fixed/Dec15/Version%204/US-Fixed-without-Satellite-Dec2015.zip','http://transition.fcc.gov/form477/BroadbandData/Fixed/Dec14/Version%203/US-Fixed-without-Satellite-Dec2014.zip')
+
+links2 <- c('http://transition.fcc.gov/form477/BroadbandData/Fixed/Jun16/Version%202/US-Fixed-without-Satellite-Jun2016.zip',
+                'http://transition.fcc.gov/form477/BroadbandData/Fixed/Dec15/Version%204/US-Fixed-without-Satellite-Dec2015.zip',
+                'http://transition.fcc.gov/form477/BroadbandData/Fixed/Dec14/Version2/US-Fixed-without-Satellite-Dec2014.zip')
+
+years <- c(2016, 2015, 2014)
+
+df <- as.data.frame(cbind(years, links, links2))
+
+fcc_history <- function(year){
+  destzip <- here("data", "original", "FCC", "FCC_Historic",  sprintf('%s_fcc.zip', year))
+  destfolder<- here("data", "original", "FCC", "FCC_Historic", sprintf('%s_fcc', year))
+  if (!file.exists(destzip)) {
+    download.file(url = as.character(df$links2[df$year == year]),
+                  destfile = destzip)
+  }
+  zip::unzip(destzip, exdir = destfolder)
+}
+
+# fcc_history(2015) 
 # <- Warning message:
 #In unzip(destzip, exdir = destfile) : zip file is corrupt
 
