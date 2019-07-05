@@ -41,13 +41,13 @@ Type: zip
 
 ```{r int serv report}
 service_map <- function() {
-  destzip<- here("data", "original", "FCC", "tract_map_jun_2017.zip")
-  destfile<- here("data", "original", "FCC", "tract_map_jun_2017.csv")
-  if (!file.exists(destfile)) {
-    download.file(url = "https://www.fcc.gov/sites/default/files/tract_map_jun_2017.zip",
+  destzip<- here("data", "original", "FCC", "tract_map_dec_2015.zip")
+  destfolder<- here("data", "original", "FCC", "tract_map_dec_2015")
+  if (!file.exists(destzip)) {
+    download.file(url = "https://www.fcc.gov/sites/default/files/tract_map_dec_2015.zip",
                   destfile = destzip)
   }
-  unzip(destzip, exdir = destfile)
+  unzip(destzip, exdir = destfolder)
 }
 
 service_map()
