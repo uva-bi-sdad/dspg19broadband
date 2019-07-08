@@ -92,8 +92,10 @@ fcc_full$county_full <- substr(fcc_full$geoid_12, 1,5)
 fcc_final  <- merge(fcc_full, r_u, by.x = 'county_full', by.y = 'FIPS', all.x = TRUE, all.y = FALSE)
 ```
 
-
-
+## Write it out
+```{r write out}
+write.csv(fcc_final, 'data/working/fcc_processed.csv')
+```
 
 
 
