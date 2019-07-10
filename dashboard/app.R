@@ -1,5 +1,5 @@
 # Read In Packages
-for (pkg in c("shiny", "leaflet", "dplyr", "httr", "here", "maptools","gpclib","sp", 'sf', 'ggplot2', 'ggmap', 'osmdata', 'tidyverse', 'tigris', 'acs', 'data.table', 'maditr', 'viridis', 'ggplot2', 'usmap')) {
+for (pkg in c("shinydashboard", "shiny", "leaflet", "dplyr", "httr", "here", "maptools","gpclib","sp", 'sf', 'ggplot2', 'ggmap', 'osmdata', 'tidyverse', 'tigris', 'acs', 'data.table', 'maditr', 'viridis', 'ggplot2', 'usmap')) {
   library(pkg, character.only = TRUE)
 }
 
@@ -56,9 +56,14 @@ server <- function(input,output, session){
   })
 }
 
-ui <- fluidPage(
-  leafletOutput("mymap",height = 1000)
+ui <- dashboardPage(
+  dashboardHeader(title = 'Broadband Coverage: ACS and FCC'),
+  dashboardSidebar('Compare At Block Group'),
+  dashboardBody(
+    fluidRow(
+      box(leafletOutput("mymap",height = 1000))
+    )
 )
-
+)
 
 shinyApp(ui = ui, server = server)
