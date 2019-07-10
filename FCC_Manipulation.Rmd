@@ -63,6 +63,7 @@ fcc_bg_final$state <- usmap::fips(fcc_bg_final$stateabbr)
 fcc_bg_final$county <- substr(fcc_bg_final$geoid_12, 3,5)
 fcc_bg_final$tract <- substr(fcc_bg_final$geoid_12, 6,11)
 fcc_bg_final$block_group <- substr(fcc_bg_final$geoid_12, 12,12)
+head(fcc_bg_final)
 ```
 
 ## Bring In Subscription Data
@@ -115,6 +116,7 @@ fcc_final  <- merge(fcc_full, r_u, by.x = 'county_full', by.y = 'FIPS', all.x = 
 ## Write it out
 ```{r write out}
 write.csv(fcc_final, 'data/working/fcc_processed.csv')
+
 ```
 
 
