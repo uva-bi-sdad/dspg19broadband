@@ -1,19 +1,23 @@
 # Read In Packages
-for (pkg in c("shinydashboard", "shiny", "leaflet", "dplyr", "httr", "here", "maptools","gpclib","sp", 'sf', 'ggplot2', 'ggmap', 'osmdata', 'tidyverse', 'tigris', 'acs', 'data.table', 'maditr', 'viridis', 'ggplot2', 'usmap')) {
+for (pkg in c("usmap","shinydashboard", "shiny", "leaflet", "dplyr", "httr", "here", "maptools","gpclib","sp", 'sf', 'ggplot2', 'ggmap', 'osmdata', 'tidyverse', 'tigris', 'acs', 'data.table', 'maditr', 'viridis', 'ggplot2', 'usmap')) {
   library(pkg, character.only = TRUE)
 }
 
 
 # Create Data for Plotting
-acs_fcc_bl_shapes <- function(state_fips){
+acs_fcc_shapes <- function(state, geography){
+  state_fips = usmap::fips(state)
   acs_file <- here("data", "working", "summary_acs.csv")
   acs <- fread(acs_file, colClasses=c(state="character",county="character",census_tract="character", block_group = "character"))
   fcc_file <- here("data", "working", "fcc_processed.csv")
   fcc <- fread(fcc_file, colClasses=c(state="character",county="character",tract="character", block_group = "character")) 
   
-  #merge fcc & acs
-  fcc_acs = merge(fcc, acs, by.x = c('state', 'county', 'tract','block_group'), by.y = c('state', 'county', 'census_tract','block_group')) %>% dt_filter(state==state_fips)
-  
+  #merge fcc & acs 
+  if(geography =='Block Group'){
+  fcc_acs = merge(fcc, acs, by.x = c('state', 'county', 'tract', 'block_group'), by.y = c('state', 'county', 'census_tract', 'block_group')) %>% dt_filter(state==state_fips)
+  } else if(geography == "Census Tract") {
+  fcc_acs = merge(fcc, acs, by.x = c('state', 'county', 'tract'), by.y = c('state', 'county', 'census_tract')) %>% dt_filter(state==state_fips)  
+  }
   #pull shapes for state
   con <- DBI::dbConnect(drv = RPostgreSQL::PostgreSQL(),
                         dbname = "gis",
@@ -21,49 +25,232 @@ acs_fcc_bl_shapes <- function(state_fips){
                         port = "5432",
                         user = Sys.getenv("db_userid"),
                         password = Sys.getenv("db_pwd"))
+  # pull shapes on tract or bl level
+  if(geography =='Block Group'){
   geo = st_read(con, c("census_cb", sprintf("cb_2018_%s_bg_500k", state_fips)))
+  } else if(geography == "Census Tract"){
+  geo = st_read(con, c("census_cb", sprintf("cb_2018_%s_tract_500k", state_fips)))  
+  }
   
   DBI::dbDisconnect(con)
   
   #merge shapes and data
+  if(geography == "Block Group") {
   full <- merge(fcc_acs, geo, by.x = c('state', 'county', 'tract', 'block_group'), by.y =c('STATEFP','COUNTYFP','TRACTCE','BLKGRPCE'))
   full_sf <- st_as_sf(full) %>% dt_select(state,county,tract, block_group, consumer_has, business_has,
                                           maxaddown, maxcirdown, stateabbr, num_ppl, availability_cons,
                                           availability_bus, pcat_all_pct_min, pcat_all_pct_max, pcat_all_10x1_min,
                                           pcat_all_10x1_max, State, County_Name, Population_2010, RUCC_2013.x, 
                                           B28002_004_per, B28002_007_per, ALAND, AWATER, geometry)
+  } else if(geography == "Census Tract"){
+  full <- merge(fcc_acs, geo, by.x = c('state', 'county', 'tract'), by.y =c('STATEFP','COUNTYFP','TRACTCE'))
+  full_sf <- st_as_sf(full) %>% dt_select(state,county,tract,consumer_has, business_has,
+                                            maxaddown, maxcirdown, stateabbr, num_ppl, availability_cons,
+                                            availability_bus, pcat_all_pct_min, pcat_all_pct_max, pcat_all_10x1_min,
+                                            pcat_all_10x1_max, State, County_Name, Population_2010, RUCC_2013.x, 
+                                            B28002_004_per, B28002_007_per, ALAND, AWATER, geometry)
+}
 }
 
-data <- acs_fcc_bl_shapes('51')
-saveRDS(data, "./sample_VA_data.rds")
-
-df <- readRDS("./sample_VA_data.rds") %>% st_transform(4326)
-
-make_state_map <- function() {
+make_state_map <- function(state, geography){
   print("Building Map...")
-  m <- leaflet(data = df) %>% 
-        addPolygons()
+  if(geography  == 'Block Group'){
+  data <- acs_fcc_shapes(state, geography) %>% st_transform(4326)
+  labels <- lapply(
+    paste("<strong>County</strong>:",
+          data$County_Name,
+          "<br />",
+          "<strong>Tract</strong>:",
+          data$tract,
+          "<br />",
+          "<strong>Block Group</strong>:",
+          data$block_group,
+          "<br />",
+          "<strong>Land Area</strong>:",
+          data$ALAND,
+          "<br />",
+          "<strong>Population (2010)</strong>:",
+          data$Population_2010,
+          "<br />",
+          "RUCC",
+          data$RUCC_2013.x,
+          "<br />",
+          "<strong>ACS Coverage: Broadband</strong>",
+          round(data$B28002_004_per,1),"%",
+          "<br />",
+          "<strong>ACS Coverage: Internet</strong>",
+          round(data$B28002_007_per,1),"%",
+          "<br />",
+          "<strong>FCC Subscription Coverage (Max)</strong>",
+          round(data$pcat_all_pct_max*100,1),"%",
+          "<br />",
+          "<strong>FCC Coverage: Consumer Broadband</strong>",
+          round(data$availability_cons*100,1),"%",
+          "<br />",
+          "<strong>FCC Coverage: Business Broadband</strong>",
+          round(data$availability_bus*100,1),"%",
+          "<br />",
+          "<strong>Percent Discrepancy:</strong>",
+          round(data$availability_cons*100 - data$B28002_004_per,1),"%"
+    ),
+    htmltools::HTML
+  )
+  qpal <- colorQuantile("YlOrRd", round(data$availability_cons*100 - data$B28002_004_per,1), n = 4)
+  # m1 <- leaflet(data = data[data$RUCC_2013.x ==1,])
+  # m2 <- leaflet(data = data[data$RUCC_2013.x ==2,])
+  m = leaflet(data = data)
+  m <- addPolygons(m,
+                   stroke = TRUE,
+                   weight = .6,
+                   smoothFactor = 0.2,
+                   label = labels,
+                   highlight = highlightOptions(
+                     weight = 5,
+                     color = "black",
+                     bringToFront = TRUE),
+                  
+                   labelOptions = labelOptions(direction = "bottom",
+                                               style = list(
+                                                 "font-size" = "12px",
+                                                 "border-color" = "rgba(0,0,0,0.5)",
+                                                 direction = "auto"
+                                               )),
+                   fillColor = ~qpal(round(data$availability_cons*100 - data$B28002_004_per,1)),
+                   fillOpacity = 0.7
+                   )
+    # %>% addPolygons(m2,
+    #             stroke = TRUE,
+    #             weight = .6,
+    #             smoothFactor = 0.2,
+    #             label = labels,
+    #             highlight = highlightOptions(
+    #               weight = 5,
+    #               color = "black",
+    #               bringToFront = TRUE),
+                
+                labelOptions = labelOptions(direction = "bottom",
+                                            style = list(
+                                              "font-size" = "12px",
+                                              "border-color" = "rgba(0,0,0,0.5)",
+                                              direction = "auto"
+                                            ))
+                fillColor = ~qpal(round(data$availability_cons*100 - data$B28002_004_per,1))
+                fillOpacity = 0.7
   m
+  } else {
+    data <- acs_fcc_shapes(state, geography) %>% st_transform(4326)
+    labels <- lapply(
+      paste("<strong>County</strong>:",
+            data$County_Name,
+            "<br />",
+            "<strong>Tract</strong>:",
+            data$tract,
+            "<br />",
+            "<strong>Land Area</strong>:",
+            data$ALAND,
+            "<br />",
+            "<strong>Population (2010)</strong>:",
+            data$Population_2010,
+            "<br />",
+            "RUCC",
+            data$RUCC_2013.x,
+            "<br />",
+            "<strong>ACS Coverage: Broadband</strong>",
+            round(data$B28002_004_per,1),"%",
+            "<br />",
+            "<strong>ACS Coverage: Internet</strong>",
+            round(data$B28002_007_per,1),"%",
+            "<br />",
+            "<strong>FCC Subscription Coverage (Max)</strong>",
+            round(data$pcat_all_pct_max*100,1),"%",
+            "<br />",
+            "<strong>FCC Coverage: Consumer Broadband</strong>",
+            round(data$availability_cons*100,1),"%",
+            "<br />",
+            "<strong>FCC Coverage: Business Broadband</strong>",
+            round(data$availability_bus*100,1),"%",
+            "<br />",
+            "<strong>Percent Discrepancy:</strong>",
+            round(data$availability_cons*100 - data$B28002_004_per,1),"%"
+      ),
+      htmltools::HTML
+    )
+    qpal <- colorQuantile("YlOrRd", round(data$availability_cons*100 - data$B28002_004_per,1), n = 4)
+    # m1 <- leaflet(data = data[data$RUCC_2013.x ==1,])
+    # m2 <- leaflet(data = data[data$RUCC_2013.x ==2,])
+    m = leaflet(data = data)
+    m <- addPolygons(m,
+                     stroke = TRUE,
+                     weight = .6,
+                     smoothFactor = 0.2,
+                     label = labels,
+                     highlight = highlightOptions(
+                       weight = 5,
+                       color = "black",
+                       bringToFront = TRUE),
+                     
+                     labelOptions = labelOptions(direction = "bottom",
+                                                 style = list(
+                                                   "font-size" = "12px",
+                                                   "border-color" = "rgba(0,0,0,0.5)",
+                                                   direction = "auto"
+                                                 )),
+                     fillColor = ~qpal(round(data$availability_cons*100 - data$B28002_004_per,1)),
+                     fillOpacity = 0.7
+    )
+    # %>% addPolygons(m2,
+    #             stroke = TRUE,
+    #             weight = .6,
+    #             smoothFactor = 0.2,
+    #             label = labels,
+    #             highlight = highlightOptions(
+    #               weight = 5,
+    #               color = "black",
+    #               bringToFront = TRUE),
+    
+    labelOptions = labelOptions(direction = "bottom",
+                                style = list(
+                                  "font-size" = "12px",
+                                  "border-color" = "rgba(0,0,0,0.5)",
+                                  direction = "auto"
+                                ))
+    fillColor = ~qpal(round(data$availability_cons*100 - data$B28002_004_per,1))
+    fillOpacity = 0.7
+    m
+  }
 }
 
 server <- function(input,output, session){
   data <- reactive({
-    x <- df
+    x <- acs_fcc_shapes(input$State, input$Geography) %>% st_transform(4326)
   })
-
+  
   output$mymap <- renderLeaflet({
-  make_state_map()
+    make_state_map(input$State, input$Geography)
   })
 }
 
-ui <- dashboardPage(
-  dashboardHeader(title = 'Broadband Coverage: ACS and FCC'),
-  dashboardSidebar('Compare At Block Group'),
-  dashboardBody(
-    fluidRow(
-      box(leafletOutput("mymap",height = 1000))
+ui <- fluidPage(
+  title = "Broadband DSPG 2019",
+  
+  titlePanel('Broadband Coverage: ACS and FCC'),
+  
+  fluidRow(
+    column(2,
+           h4("Controls"),
+           selectInput("State", "Select A State", choices = state.abb, selected = 'AL', multiple = FALSE,
+                       selectize = TRUE, width = NULL, size = NULL)
+    ),
+    column(2,
+           selectInput("Geography", "Select Geography", c("Census Tract", "Block Group"), selected = 'Census Tract', multiple = FALSE,
+                       selectize = TRUE, width = NULL, size = NULL)
     )
-)
+  ),
+  
+  hr(),
+  
+  leafletOutput("mymap",height = 600, width = 1000)
+  
 )
 
 shinyApp(ui = ui, server = server)
