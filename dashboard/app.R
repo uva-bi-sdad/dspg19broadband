@@ -1,11 +1,12 @@
 # Read In Packages
-for (pkg in c("usmap","shinydashboard", "shiny", "leaflet", "dplyr", "httr", "here", "maptools","gpclib","sp", 'sf', 'ggplot2', 'ggmap', 'osmdata', 'tidyverse', 'tigris', 'acs', 'data.table', 'maditr', 'viridis', 'ggplot2', 'usmap')) {
+for (pkg in c("usmap","shinydashboard", "shiny", "leaflet", "dplyr", "httr", "here", "maptools","gpclib","sp", 'sf', 'ggplot2', 'ggmap', 
+              'tidyverse', 'tigris', 'acs', 'data.table', 'maditr', 'viridis', 'ggplot2', 'usmap')) {
   library(pkg, character.only = TRUE)
 }
 
 
 # Create Data for Plotting
-acs_fcc_shapes <- function(state, geography){
+acs_fcc_shapes <- function(state, geography, r_u){
   state_fips = usmap::fips(state)
   if(geography == "Block Group"){
   acs_file <- here("data", "working", "summary_acs.csv")
@@ -16,7 +17,7 @@ acs_fcc_shapes <- function(state, geography){
   acs_file <- here("data", "working", "summary_acs_census_tract.csv")
   acs <- fread(acs_file, colClasses=c(state="character",county="character",census_tract="character"))
   fcc_file <- here("data", "working", "fcc_processed_tract.csv")
-  fcc <- fread(fcc_file, colClasses=c(state="character",county="character",tract="character"))   
+  fcc <- fread(fcc_file, colClasses=c(state="character",county="character",tract_short="character", tract="character"))   
   }
   
   #merge fcc & acs 
@@ -24,7 +25,7 @@ acs_fcc_shapes <- function(state, geography){
   fcc_acs = merge(fcc, acs, by.x = c('state', 'county', 'tract', 'block_group'), by.y = c('state', 'county', 'census_tract', 'block_group')) %>% 
     dt_filter(state==state_fips)
   } else if(geography == "Census Tract") {
-  fcc_acs = merge(fcc, acs, by.x = c('state', 'county', 'tract'), by.y = c('state', 'county', 'census_tract')) %>%
+  fcc_acs = merge(fcc, acs, by.x = c('state', 'county', 'tract_short'), by.y = c('state', 'county', 'census_tract')) %>%
     dt_filter(state==state_fips)  
   }
   #pull shapes for state
@@ -46,25 +47,37 @@ acs_fcc_shapes <- function(state, geography){
   #merge shapes and data
   if(geography == "Block Group") {
   full <- merge(fcc_acs, geo, by.x = c('state', 'county', 'tract', 'block_group'), by.y =c('STATEFP','COUNTYFP','TRACTCE','BLKGRPCE'))
-  full_sf <- st_as_sf(full) %>% dt_select(state,county,tract, block_group, consumer_has, business_has,
+  full_sf <- full %>% dt_select(state,county,tract, block_group, consumer_has, business_has,
                                           maxaddown, maxcirdown, stateabbr, num_ppl, availability_cons,
                                           availability_bus, pcat_all_pct_min, pcat_all_pct_max, pcat_all_10x1_min,
                                           pcat_all_10x1_max, State, County_Name, Population_2010, RUCC_2013.x, 
-                                          B28002_004_per, B28002_007_per, ALAND, AWATER, geometry)
+                                          B28002_004_per, B28002_007_per, ALAND, AWATER, geometry) %>% 
+                                dt_mutate(rural_urban = ifelse(RUCC_2013.x < 4, 'Urban', 'Rural')) %>% rename("RUCC_2013" = "RUCC_2013.x")
+  
   } else if(geography == "Census Tract"){
-  full <- merge(fcc_acs, geo, by.x = c('state', 'county', 'tract'), by.y =c('STATEFP','COUNTYFP','TRACTCE'))
-  full_sf <- st_as_sf(full) %>% dt_select(state,county,tract,consumer_has, business_has,
+  full <- merge(fcc_acs, geo, by.x = c('state', 'county', 'tract_short'), by.y =c('STATEFP','COUNTYFP','TRACTCE'))
+  full_sf <- full %>% dt_select(state,county,tract,consumer_has, business_has,
                                             maxaddown, maxcirdown, stateabbr, num_ppl, availability_cons,
                                             availability_bus, pcat_all_pct_min, pcat_all_pct_max, pcat_all_10x1_min,
-                                            pcat_all_10x1_max, State, County_Name, Population_2010, RUCC_2013.x, 
-                                            B28002_004_per, B28002_007_per, ALAND, AWATER, geometry)
-}
+                                            pcat_all_10x1_max, State, County_Name, Population_2010, RUCC_2013, 
+                                            B28002_004_per, B28002_007_per, ALAND, AWATER, geometry) %>% 
+                      dt_mutate(rural_urban = ifelse(RUCC_2013 < 4, 'Urban','Rural'))
+  }
+
+  #allow to filter by rural/urban
+  if(r_u == 'Rural') {
+    full_sf %>% data.table() %>% dt_filter(rural_urban == 'Rural') %>% st_as_sf()
+  } else if (r_u == 'Urban') {
+    full_sf %>% data.table() %>% dt_filter(rural_urban == 'Urban') %>% st_as_sf()
+  } else if (r_u == 'All') {
+    full_sf = full_sf %>% st_as_sf()
+  }
 }
 
-make_state_map <- function(state, geography){
+make_state_map <- function(state, geography, r_u){
   print("Building Map...")
   if(geography  == 'Block Group'){
-  data <- acs_fcc_shapes(state, geography) %>% st_transform(4326)
+  data <- acs_fcc_shapes(state, geography, r_u) %>% st_transform(4326)
   labels <- lapply(
     paste("<strong>County</strong>:",
           data$County_Name,
@@ -82,7 +95,7 @@ make_state_map <- function(state, geography){
           data$Population_2010,
           "<br />",
           "RUCC",
-          data$RUCC_2013.x,
+          data$RUCC_2013,
           "<br />",
           "<strong>ACS Coverage: Broadband</strong>",
           round(data$B28002_004_per,1),"%",
@@ -105,8 +118,6 @@ make_state_map <- function(state, geography){
     htmltools::HTML
   )
   qpal <- colorQuantile("YlOrRd", round(data$availability_cons*100 - data$B28002_004_per,1), n = 4)
-  # m1 <- leaflet(data = data[data$RUCC_2013.x ==1,])
-  # m2 <- leaflet(data = data[data$RUCC_2013.x ==2,])
   m = leaflet(data = data)
   m <- addPolygons(m,
                    stroke = TRUE,
@@ -127,15 +138,6 @@ make_state_map <- function(state, geography){
                    fillColor = ~qpal(round(data$availability_cons*100 - data$B28002_004_per,1)),
                    fillOpacity = 0.7
                    )
-    # %>% addPolygons(m2,
-    #             stroke = TRUE,
-    #             weight = .6,
-    #             smoothFactor = 0.2,
-    #             label = labels,
-    #             highlight = highlightOptions(
-    #               weight = 5,
-    #               color = "black",
-    #               bringToFront = TRUE),
                 
                 labelOptions = labelOptions(direction = "bottom",
                                             style = list(
@@ -147,7 +149,7 @@ make_state_map <- function(state, geography){
                 fillOpacity = 0.7
   m
   } else {
-    data <- acs_fcc_shapes(state, geography) %>% st_transform(4326)
+    data <- acs_fcc_shapes(state, geography, r_u) %>% st_transform(4326)
     labels <- lapply(
       paste("<strong>County</strong>:",
             data$County_Name,
@@ -207,15 +209,6 @@ make_state_map <- function(state, geography){
                      fillColor = ~qpal(round(data$availability_cons*100 - data$B28002_004_per,1)),
                      fillOpacity = 0.7
     )
-    # %>% addPolygons(m2,
-    #             stroke = TRUE,
-    #             weight = .6,
-    #             smoothFactor = 0.2,
-    #             label = labels,
-    #             highlight = highlightOptions(
-    #               weight = 5,
-    #               color = "black",
-    #               bringToFront = TRUE),
     
     labelOptions = labelOptions(direction = "bottom",
                                 style = list(
@@ -231,27 +224,33 @@ make_state_map <- function(state, geography){
 
 server <- function(input,output, session){
   data <- reactive({
-    x <- acs_fcc_shapes(input$State, input$Geography) %>% st_transform(4326)
+    x <- acs_fcc_shapes(input$State, input$Geography, input$R_U) %>% st_transform(4326)
   })
   
   output$mymap <- renderLeaflet({
-    make_state_map(input$State, input$Geography)
+    make_state_map(input$State, input$Geography, input$R_U)
   })
 }
 
-ui <- fluidPage(
+ui <- fluidPage(theme = "bootstrap.min.css",
   title = "Broadband DSPG 2019",
   
   titlePanel('Broadband Coverage: ACS and FCC'),
   
+  img(src = 'ers_logo.png'), # why no work?
+  
   fluidRow(
-    column(2,
+    column(1,
            h4("Controls"),
            selectInput("State", "Select A State", choices = state.abb, selected = 'AL', multiple = FALSE,
                        selectize = TRUE, width = NULL, size = NULL)
     ),
-    column(2,
+    column(3,
            selectInput("Geography", "Select Geography", c("Census Tract", "Block Group"), selected = 'Census Tract', multiple = FALSE,
+                       selectize = TRUE, width = NULL, size = NULL)
+    ),
+    column(3,
+           selectInput("R_U", "Rural/Urban", c("Rural", "Urban", "All"), selected = 'Rural', multiple = FALSE,
                        selectize = TRUE, width = NULL, size = NULL)
     )
   ),
