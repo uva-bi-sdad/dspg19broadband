@@ -7,16 +7,25 @@ for (pkg in c("usmap","shinydashboard", "shiny", "leaflet", "dplyr", "httr", "he
 # Create Data for Plotting
 acs_fcc_shapes <- function(state, geography){
   state_fips = usmap::fips(state)
+  if(geography == "Block Group"){
   acs_file <- here("data", "working", "summary_acs.csv")
   acs <- fread(acs_file, colClasses=c(state="character",county="character",census_tract="character", block_group = "character"))
   fcc_file <- here("data", "working", "fcc_processed.csv")
   fcc <- fread(fcc_file, colClasses=c(state="character",county="character",tract="character", block_group = "character")) 
+  } else if(geography == "Census Tract"){
+  acs_file <- here("data", "working", "summary_acs_census_tract.csv")
+  acs <- fread(acs_file, colClasses=c(state="character",county="character",census_tract="character"))
+  fcc_file <- here("data", "working", "fcc_processed_tract.csv")
+  fcc <- fread(fcc_file, colClasses=c(state="character",county="character",tract="character"))   
+  }
   
   #merge fcc & acs 
   if(geography =='Block Group'){
-  fcc_acs = merge(fcc, acs, by.x = c('state', 'county', 'tract', 'block_group'), by.y = c('state', 'county', 'census_tract', 'block_group')) %>% dt_filter(state==state_fips)
+  fcc_acs = merge(fcc, acs, by.x = c('state', 'county', 'tract', 'block_group'), by.y = c('state', 'county', 'census_tract', 'block_group')) %>% 
+    dt_filter(state==state_fips)
   } else if(geography == "Census Tract") {
-  fcc_acs = merge(fcc, acs, by.x = c('state', 'county', 'tract'), by.y = c('state', 'county', 'census_tract')) %>% dt_filter(state==state_fips)  
+  fcc_acs = merge(fcc, acs, by.x = c('state', 'county', 'tract'), by.y = c('state', 'county', 'census_tract')) %>%
+    dt_filter(state==state_fips)  
   }
   #pull shapes for state
   con <- DBI::dbConnect(drv = RPostgreSQL::PostgreSQL(),
