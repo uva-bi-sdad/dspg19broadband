@@ -15,6 +15,7 @@ Resource:[Form 477](https://opendata.fcc.gov/Wireline/Fixed-Broadband-Deployment
 Updated: April 8, 2019
 Type: CSV
 
+
 ```{r load packages}
 for (pkg in c("httr", "here", "maptools","gpclib","sp", 'sf', 'ggplot2', 'ggmap', 'osmdata', 'tidyverse', 'tigris', 'acs', "RSocrata")) {
   library(pkg, character.only = TRUE)
@@ -41,7 +42,6 @@ fcc_477 <- function(state) {
 for (state in state.abb) {
   fcc_477(state)
 }
-
 
 
 ```
@@ -76,17 +76,19 @@ state_blocks <- function(fips) {
                   destfile = destzip)
   }
   unzip(destzip, exdir = destfile)
+
+  file.remove(destzip)
+
 }
 
 
 # get block groups for VA
-state_blocks(51)
+# state_blocks(51)
 
 ```
 
-
 ```{r previous years - fcc}
-## Tried and failed - historic files are corrupt
+## Tried and failed - historic files have weird permissions and need to be transported via SFTP. Reference XWiki /Analysis page on FCC data for more information.
 
 links <- c('http://transition.fcc.gov/form477/BroadbandData/Fixed/Dec16/Version%202/US-Fixed-without-satellite-Dec2016.zip','http://transition.fcc.gov/form477/BroadbandData/Fixed/Dec15/Version%204/US-Fixed-without-Satellite-Dec2015.zip','http://transition.fcc.gov/form477/BroadbandData/Fixed/Dec14/Version%203/US-Fixed-without-Satellite-Dec2014.zip')
 
