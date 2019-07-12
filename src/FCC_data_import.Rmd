@@ -16,6 +16,7 @@ Updated: April 8, 2019
 Type: CSV
 
 
+
 ```{r load packages}
 for (pkg in c("httr", "here", "maptools","gpclib","sp", 'sf', 'ggplot2', 'ggmap', 'osmdata', 'tidyverse', 'tigris', 'acs', "RSocrata")) {
   library(pkg, character.only = TRUE)
@@ -54,13 +55,14 @@ Type: zip
 
 ```{r int serv report}
 service_map <- function() {
-  destzip<- here("data", "original", "FCC", "tract_map_jun_2017.zip")
-  destfile<- here("data", "original", "FCC", "tract_map_jun_2017.csv")
-  if (!file.exists(destfile)) {
-    download.file(url = "https://www.fcc.gov/sites/default/files/tract_map_jun_2017.zip",
+  destzip<- here("data", "original", "FCC", "tract_map_dec_2015.zip")
+  destfolder<- here("data", "original", "FCC", "tract_map_dec_2015")
+  if (!file.exists(destzip)) {
+    download.file(url = "https://www.fcc.gov/sites/default/files/tract_map_dec_2015.zip",
                   destfile = destzip)
   }
-  unzip(destzip, exdir = destfile)
+  unzip(destzip, exdir = destfolder)
+
 }
 
 service_map()
@@ -69,20 +71,26 @@ service_map()
 
 ```{r census tracts}
 state_blocks <- function(fips) {
-  destzip <- here("data", "original", "Census Blocks",  '%s_census_blocks')
-  destfile<- here("data", "original", "Census Blocks", sprintf('%s_census_blocks', fips))
-  if (!file.exists(destfile)) {
+
+  destzip <- here("data", "original", "Census Blocks",  sprintf('%s_census_blocks.zip', fips))
+  destdir<- here("data", "original", "Census Blocks", sprintf('%s_census_blocks', fips))
+  if (!dir.exists(destfile)) {
+    dir.create(destdir)
     download.file(url = sprintf('https://www2.census.gov/geo/tiger/TIGER2018/BG/tl_2018_%s_bg.zip', fips),
                   destfile = destzip)
   }
   unzip(destzip, exdir = destfile)
-
   file.remove(destzip)
 
 }
 
-
 # get block groups for VA
+
+#state_blocks(51)
+
+```
+
+
 # state_blocks(51)
 
 ```
@@ -117,3 +125,4 @@ fcc_history <- function(year){
 # fcc_history(2015)
 
 ```
+
