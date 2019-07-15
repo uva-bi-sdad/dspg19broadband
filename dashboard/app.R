@@ -94,17 +94,23 @@ make_state_map <- function(state, geography, r_u){
           "<strong>Population (2010)</strong>:",
           data$Population_2010,
           "<br />",
-          "RUCC",
+          "<strong>RUCC</strong>",
           data$RUCC_2013,
           "<br />",
-          "<strong>ACS Coverage: Broadband</strong>",
+          "<strong>ACS Coverage: Broadband (004) </strong>",
           round(data$B28002_004_per,1),"%",
           "<br />",
-          "<strong>ACS Coverage: Internet</strong>",
+          "<strong>ACS Coverage: Internet (007) </strong>",
           round(data$B28002_007_per,1),"%",
           "<br />",
           "<strong>FCC Subscription Coverage (Max)</strong>",
           round(data$pcat_all_pct_max*100,1),"%",
+          "<br />",
+          "<strong>FCC Subscription Coverage (Min)</strong>",
+          round(data$pcat_all_pct_min*100,1),"%",
+          "<br />",
+          "<strong>ACS Internet In FCC Subs Bin</strong>",
+          if(data$B28002_007_per < data$pcat_all_pct_max*100 & data$B28002_007_per > data$pcat_all_pct_min*100) 1 else 0,
           "<br />",
           "<strong>FCC Coverage: Consumer Broadband</strong>",
           round(data$availability_cons*100,1),"%",
@@ -112,12 +118,12 @@ make_state_map <- function(state, geography, r_u){
           "<strong>FCC Coverage: Business Broadband</strong>",
           round(data$availability_bus*100,1),"%",
           "<br />",
-          "<strong>Percent Discrepancy:</strong>",
-          round(data$availability_cons*100 - data$B28002_004_per,1),"%"
+          "<strong>Percent Discrepancy: (Consumer Cov - 007) </strong>",
+          round(data$availability_cons*100 - data$B28002_007_per,1),"%"
     ),
     htmltools::HTML
   )
-  qpal <- colorQuantile("YlOrRd", round(data$availability_cons*100 - data$B28002_004_per,1), n = 4)
+  qpal <- colorQuantile("YlOrRd", round(data$availability_cons*100 - data$B28002_007_per,1), n = 5)
   m = leaflet(data = data)
   m <- addPolygons(m,
                    stroke = TRUE,
@@ -135,19 +141,10 @@ make_state_map <- function(state, geography, r_u){
                                                  "border-color" = "rgba(0,0,0,0.5)",
                                                  direction = "auto"
                                                )),
-                   fillColor = ~qpal(round(data$availability_cons*100 - data$B28002_004_per,1)),
+                   fillColor = ~qpal(round(data$availability_cons*100 - data$B28002_007_per,1)),
                    fillOpacity = 0.7
                    )
-                
-                labelOptions = labelOptions(direction = "bottom",
-                                            style = list(
-                                              "font-size" = "12px",
-                                              "border-color" = "rgba(0,0,0,0.5)",
-                                              direction = "auto"
-                                            ))
-                fillColor = ~qpal(round(data$availability_cons*100 - data$B28002_004_per,1))
-                fillOpacity = 0.7
-  m
+              
   } else {
     data <- acs_fcc_shapes(state, geography, r_u) %>% st_transform(4326)
     labels <- lapply(
@@ -163,17 +160,23 @@ make_state_map <- function(state, geography, r_u){
             "<strong>Population (2010)</strong>:",
             data$Population_2010,
             "<br />",
-            "RUCC",
-            data$RUCC_2013.x,
+            "<strong>RUCC</strong>",
+            data$RUCC_2013,
             "<br />",
-            "<strong>ACS Coverage: Broadband</strong>",
+            "<strong>ACS Coverage: Broadband (004) </strong>",
             round(data$B28002_004_per,1),"%",
             "<br />",
-            "<strong>ACS Coverage: Internet</strong>",
+            "<strong>ACS Coverage: Internet (007) </strong>",
             round(data$B28002_007_per,1),"%",
             "<br />",
             "<strong>FCC Subscription Coverage (Max)</strong>",
             round(data$pcat_all_pct_max*100,1),"%",
+            "<br />",
+            "<strong>FCC Subscription Coverage (Min)</strong>",
+            round(data$pcat_all_pct_min*100,1),"%",
+            "<br />",
+            "<strong>ACS Internet In FCC Subs Bin</strong>",
+            if_else((data$B28002_007_per < data$pcat_all_pct_max*100) && (data$B28002_007_per > data$pcat_all_pct_min*100),1, 0),
             "<br />",
             "<strong>FCC Coverage: Consumer Broadband</strong>",
             round(data$availability_cons*100,1),"%",
@@ -181,14 +184,12 @@ make_state_map <- function(state, geography, r_u){
             "<strong>FCC Coverage: Business Broadband</strong>",
             round(data$availability_bus*100,1),"%",
             "<br />",
-            "<strong>Percent Discrepancy:</strong>",
-            round(data$availability_cons*100 - data$B28002_004_per,1),"%"
+            "<strong>Percent Discrepancy: (Consumer Cov - 007) </strong>",
+            round(data$availability_cons*100 - data$B28002_007_per,1),"%"
       ),
       htmltools::HTML
     )
-    qpal <- colorQuantile("YlOrRd", round(data$availability_cons*100 - data$B28002_004_per,1), n = 4)
-    # m1 <- leaflet(data = data[data$RUCC_2013.x ==1,])
-    # m2 <- leaflet(data = data[data$RUCC_2013.x ==2,])
+    qpal <- colorQuantile("YlOrRd", round(data$availability_cons*100 - data$B28002_007_per,1), n = 5)
     m = leaflet(data = data)
     m <- addPolygons(m,
                      stroke = TRUE,
@@ -206,7 +207,7 @@ make_state_map <- function(state, geography, r_u){
                                                    "border-color" = "rgba(0,0,0,0.5)",
                                                    direction = "auto"
                                                  )),
-                     fillColor = ~qpal(round(data$availability_cons*100 - data$B28002_004_per,1)),
+                     fillColor = ~qpal(round(data$availability_cons*100 - data$B28002_007_per,1)),
                      fillOpacity = 0.7
     )
     
@@ -222,7 +223,7 @@ make_state_map <- function(state, geography, r_u){
   }
 }
 
-server <- function(input,output, session){
+server <- function(input,output,session){
   data <- reactive({
     x <- acs_fcc_shapes(input$State, input$Geography, input$R_U) %>% st_transform(4326)
   })
@@ -234,18 +235,18 @@ server <- function(input,output, session){
 
 ui <- fluidPage(theme = "bootstrap.min.css",
   title = "Broadband DSPG 2019",
-  
+  #includeCSS("styles.css"),
   titlePanel('Broadband Coverage: ACS and FCC'),
-  
-  img(src = 'ers_logo.png'), # why no work?
-  
+  fluidRow(img(src = 'ers_logo.png')),
   fluidRow(
-    column(1,
-           h4("Controls"),
+    h4("Controls")
+  ),
+  fluidRow(
+    column(3,
            selectInput("State", "Select A State", choices = state.abb, selected = 'AL', multiple = FALSE,
                        selectize = TRUE, width = NULL, size = NULL)
     ),
-    column(3,
+    column(3, 
            selectInput("Geography", "Select Geography", c("Census Tract", "Block Group"), selected = 'Census Tract', multiple = FALSE,
                        selectize = TRUE, width = NULL, size = NULL)
     ),
