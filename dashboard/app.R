@@ -1,5 +1,5 @@
 # Read In Packages
-for (pkg in c("usmap","shinydashboard", "shiny", "leaflet", "dplyr", "httr", "here", "maptools","gpclib","sp", 'sf', 'ggplot2', 'ggmap', 
+for (pkg in c("tableHTML","usmap","shinydashboard", "shiny", "leaflet", "dplyr", "httr", "here", "maptools","gpclib","sp", 'sf', 'ggplot2', 'ggmap', 
               'tidyverse', 'tigris', 'acs', 'data.table', 'maditr', 'viridis', 'ggplot2', 'usmap')) {
   library(pkg, character.only = TRUE)
 }
@@ -233,14 +233,17 @@ server <- function(input,output,session){
   })
 }
 
-ui <- fluidPage(theme = "bootstrap.min.css",
+ui <- fluidPage(
+  theme = "bootstrap.css",
   title = "Broadband DSPG 2019",
-  #includeCSS("styles.css"),
-  titlePanel('Broadband Coverage: ACS and FCC'),
-  fluidRow(img(src = 'ers_logo.png')),
-  fluidRow(
-    h4("Controls")
-  ),
+  
+  fixedRow(column(2.5,
+                  img(src = 'ers_logo.png', class = 'topimage')
+                  ),
+           column(7,
+           h1('Broadband Coverage: ACS and FCC'))
+           ),
+  hr(),
   fluidRow(
     column(3,
            selectInput("State", "Select A State", choices = state.abb, selected = 'AL', multiple = FALSE,
@@ -258,7 +261,7 @@ ui <- fluidPage(theme = "bootstrap.min.css",
   
   hr(),
   
-  leafletOutput("mymap",height = 600, width = 1000)
+  leafletOutput("mymap",height = 450, width = 900)
   
 )
 

@@ -68,21 +68,40 @@ body {
 }
 
 hr {
-  box-sizing: content-box;
   height: 0;
   overflow: visible;
 }
 
-h1, h2, h3, h4, h5, h6 {
-  margin-top: 0;
-  margin-bottom: 0.5rem;
-}
 
 h2 {
-  color: blue;
-  size: 15px;
+  width: 200%;
+  padding: 5px;
+  font-family: "Helvetica Rounded";
+  font-weight: bold;
+  text-align:left;
+  text-transform: uppercase;
+  color: rgb(19, 73, 135);
 }
 
+.col-sm-8 {
+  font-size: 10px;
+}
+
+.topimage{
+  padding: 3px;
+  width: 200px;
+}
+
+.control-label{
+  padding: 6px;
+  font-size: 120%;
+  font-family: "Helvetica Rounded";
+  color: rgb(19, 73, 135);
+}
+
+.mymap{
+  background-color: rgb(236, 236, 236);
+}
 
 p {
   margin-top: 0;
@@ -367,13 +386,17 @@ template {
 
 h1, h2, h3, h4, h5, h6,
 .h1, .h2, .h3, .h4, .h5, .h6 {
-  margin-bottom: 0.5rem;
   font-weight: 500;
   line-height: 1.2;
 }
 
 h1, .h1 {
-  font-size: 2.5rem;
+  font-size: 2.6rem;
+  line-height: 3.2;
+  font-family: "Helvetica Rounded";
+  text-transform: uppercase;
+  font-weight: 800;
+  color: rgb(19, 73, 135);
 }
 
 h2, .h2 {
@@ -587,7 +610,7 @@ pre code {
   width: 100%;
   padding-right: 15px;
   padding-left: 15px;
-  margin-right: auto;
+  margin-right: 70%;
   margin-left: auto;
 }
 
