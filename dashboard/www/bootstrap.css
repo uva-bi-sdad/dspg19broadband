@@ -87,6 +87,8 @@ h2 {
   font-size: 10px;
 }
 
+
+
 .topimage{
   padding: 3px;
   width: 200px;
@@ -94,13 +96,14 @@ h2 {
 
 .control-label{
   padding: 6px;
-  font-size: 120%;
+  font-size: 150%;
   font-family: "Helvetica Rounded";
   color: rgb(19, 73, 135);
 }
 
 .mymap{
-  background-color: rgb(236, 236, 236);
+  background-color: black;
+  border-style: solid;
 }
 
 p {
@@ -112,11 +115,9 @@ abbr[title],
 abbr[data-original-title] {
   text-decoration: underline;
   -webkit-text-decoration: underline dotted;
-  text-decoration: underline dotted;
   cursor: help;
   border-bottom: 0;
   -webkit-text-decoration-skip-ink: none;
-  text-decoration-skip-ink: none;
 }
 
 address {
@@ -603,6 +604,7 @@ pre code {
 @media (min-width: 1200px) {
   .container {
     max-width: 1140px;
+    text-align: center;
   }
 }
 
@@ -612,6 +614,7 @@ pre code {
   padding-left: 15px;
   margin-right: 70%;
   margin-left: auto;
+   text-align: center;
 }
 
 .row {
@@ -621,6 +624,10 @@ pre code {
   flex-wrap: wrap;
   margin-right: -15px;
   margin-left: -15px;
+  text-align: center;
+  padding-left: 15px;
+  padding-right: 15px;
+  align-items
 }
 
 .no-gutters {
@@ -905,6 +912,7 @@ pre code {
     -ms-flex: 0 0 66.666667%;
     flex: 0 0 66.666667%;
     max-width: 66.666667%;
+    text-align:center;
   }
   .col-sm-9 {
     -ms-flex: 0 0 75%;

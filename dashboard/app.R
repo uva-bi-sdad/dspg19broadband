@@ -237,7 +237,7 @@ ui <- fluidPage(
   theme = "bootstrap.css",
   title = "Broadband DSPG 2019",
   
-  fixedRow(column(2.5,
+  fluidRow(column(2.5,
                   img(src = 'ers_logo.png', class = 'topimage')
                   ),
            column(7,
@@ -254,14 +254,13 @@ ui <- fluidPage(
                        selectize = TRUE, width = NULL, size = NULL)
     ),
     column(3,
-           selectInput("R_U", "Rural/Urban", c("Rural", "Urban", "All"), selected = 'Rural', multiple = FALSE,
+           selectInput("R_U", "Rural/Urban", c("Rural", "Urban", "All"), selected = 'All', multiple = FALSE,
                        selectize = TRUE, width = NULL, size = NULL)
     )
   ),
   
   hr(),
-  
-  leafletOutput("mymap",height = 450, width = 900)
+  fluidRow(leafletOutput("mymap",height = 450, width = 900))
   
 )
 
