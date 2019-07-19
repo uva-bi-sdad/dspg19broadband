@@ -246,7 +246,7 @@ ui <- fluidPage(
   hr(),
   fluidRow(
     column(3,
-           selectInput("State", "Select A State", choices = state.abb, selected = 'AL', multiple = FALSE,
+           selectInput("State", "Select State", choices = state.abb, selected = 'AL', multiple = FALSE,
                        selectize = TRUE, width = NULL, size = NULL)
     ),
     column(3, 
