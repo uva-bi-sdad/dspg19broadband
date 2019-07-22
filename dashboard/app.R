@@ -88,34 +88,34 @@ make_state_map <- function(state, geography, r_u){
           "<strong>Block Group</strong>:",
           data$block_group,
           "<br />",
-          "<strong>Land Area</strong>:",
-          data$ALAND,
+          "<strong>Land Area (square meters)</strong>:",
+          formatC(data$ALAND, format="f", big.mark = ",", digits = 0),
           "<br />",
           "<strong>Population (2010)</strong>:",
           data$Population_2010,
           "<br />",
-          "<strong>RUCC</strong>",
+          "<strong>RUCC</strong>:",
           data$RUCC_2013,
           "<br />",
-          "<strong>ACS Coverage: Broadband (004) </strong>",
+          "<strong>ACS Coverage: Broadband (004) </strong>:",
           round(data$B28002_004_per,1),"%",
           "<br />",
-          "<strong>ACS Coverage: Internet (007) </strong>",
+          "<strong>ACS Coverage: Internet (007) </strong>:",
           round(data$B28002_007_per,1),"%",
           "<br />",
-          "<strong>FCC Subscription Coverage (Max)</strong>",
+          "<strong>FCC Subscription Coverage (Max)</strong>:",
           round(data$pcat_all_pct_max*100,1),"%",
           "<br />",
-          "<strong>FCC Subscription Coverage (Min)</strong>",
+          "<strong>FCC Subscription Coverage (Min)</strong>:",
           round(data$pcat_all_pct_min*100,1),"%",
           "<br />",
-          "<strong>ACS Internet In FCC Subs Bin</strong>",
+          "<strong>ACS Internet In FCC Subs Bin</strong>:",
           data$B28002_007_per < data$pcat_all_pct_max*100 & data$B28002_007_per > data$pcat_all_pct_min*100,
           "<br />",
-          "<strong>FCC Coverage: Consumer</strong>",
+          "<strong>FCC Coverage: Consumer</strong>:",
           round(data$availability_cons*100,1),"%",
           "<br />",
-          "<strong>FCC Coverage: Business</strong>",
+          "<strong>FCC Coverage: Business</strong>:",
           round(data$availability_bus*100,1),"%",
           "<br />",
           "<strong>Percentile Discrepancy: </strong>",
@@ -127,7 +127,8 @@ make_state_map <- function(state, geography, r_u){
   m = leaflet(data = data)
   m <- addPolygons(m,
                    stroke = TRUE,
-                   weight = .6,
+                   weight = .8,
+                   color = 'lightgray',
                    smoothFactor = 0.2,
                    label = labels,
                    highlight = highlightOptions(
@@ -144,6 +145,10 @@ make_state_map <- function(state, geography, r_u){
                    fillColor = ~qpal(round(data$availability_cons*100 - data$B28002_007_per,1)),
                    fillOpacity = 0.7
                    )
+  m <- addLegend(m,
+                 position = "bottomleft", pal = qpal, values = ~(round(availability_cons*100 - B28002_007_per,1)),
+                 title = "Percentile Difference: FCC v ACS",
+                 opacity = 1)
               
   } else {
     data <- acs_fcc_shapes(state, geography, r_u) %>% st_transform(4326)
@@ -154,34 +159,34 @@ make_state_map <- function(state, geography, r_u){
             "<strong>Tract</strong>:",
             data$tract,
             "<br />",
-            "<strong>Land Area</strong>:",
-            data$ALAND,
+            "<strong>Land Area (square meters) </strong>:",
+            formatC(data$ALAND, format="f", big.mark = ",", digits = 0),
             "<br />",
             "<strong>Population (2010)</strong>:",
             data$Population_2010,
             "<br />",
-            "<strong>RUCC</strong>",
+            "<strong>RUCC</strong>:",
             data$RUCC_2013,
             "<br />",
-            "<strong>ACS Coverage: Broadband (004) </strong>",
+            "<strong>ACS Coverage: Broadband (004) </strong>:",
             round(data$B28002_004_per,1),"%",
             "<br />",
-            "<strong>ACS Coverage: Internet (007) </strong>",
+            "<strong>ACS Coverage: Internet (007) </strong>:",
             round(data$B28002_007_per,1),"%",
             "<br />",
-            "<strong>FCC Subscription Coverage (Max)</strong>",
+            "<strong>FCC Subscription Coverage (Max)</strong>:",
             round(data$pcat_all_pct_max*100,1),"%",
             "<br />",
-            "<strong>FCC Subscription Coverage (Min)</strong>",
+            "<strong>FCC Subscription Coverage (Min)</strong>:",
             round(data$pcat_all_pct_min*100,1),"%",
             "<br />",
-            "<strong>ACS Internet In FCC Subs Bin</strong>",
+            "<strong>ACS Internet In FCC Subs Bin</strong>:",
             data$B28002_007_per < data$pcat_all_pct_max*100 & data$B28002_007_per > data$pcat_all_pct_min*100,
             "<br />",
-            "<strong>FCC Coverage: Consumer</strong>",
+            "<strong>FCC Coverage: Consumer</strong>:",
             round(data$availability_cons*100,1),"%",
             "<br />",
-            "<strong>FCC Coverage: Business</strong>",
+            "<strong>FCC Coverage: Business</strong>:",
             round(data$availability_bus*100,1),"%",
             "<br />",
             "<strong>Percentile Discrepancy: </strong>",
@@ -193,7 +198,8 @@ make_state_map <- function(state, geography, r_u){
     m = leaflet(data = data)
     m <- addPolygons(m,
                      stroke = TRUE,
-                     weight = .6,
+                     weight = 1,
+                     color = "lightgray",
                      smoothFactor = 0.2,
                      label = labels,
                      highlight = highlightOptions(
@@ -205,11 +211,12 @@ make_state_map <- function(state, geography, r_u){
                                                  style = list(
                                                    "font-size" = "12px",
                                                    "border-color" = "rgba(0,0,0,0.5)",
-                                                   direction = "auto"
+                                                   direction = "auto",
+                                                   offset = c(1, 5)
                                                  )),
                      fillColor = ~qpal(round(data$availability_cons*100 - data$B28002_007_per,1)),
                      fillOpacity = 0.7
-    )
+    ) 
     
     labelOptions = labelOptions(direction = "bottom",
                                 style = list(
@@ -219,6 +226,10 @@ make_state_map <- function(state, geography, r_u){
                                 ))
     fillColor = ~qpal(round(data$availability_cons*100 - data$B28002_004_per,1))
     fillOpacity = 0.7
+    m <- addLegend(m,
+                  position = "bottomleft", pal = qpal, values = ~(round(availability_cons*100 - B28002_007_per,1)),
+                  title = "Percentile Difference: FCC v ACS",
+                  opacity = 1)
     m
   }
 }
@@ -237,14 +248,14 @@ ui <- fluidPage(
   theme = "bootstrap.css",
   title = "Broadband DSPG 2019",
   
-  fluidRow(column(2.5,
+  fluidRow(width = 4, column(2.5,
                   img(src = 'ers_logo.png', class = 'topimage')
                   ),
-           column(7,
+           column(7, 
            h1('Broadband Coverage: ACS and FCC'))
            ),
   hr(),
-  fluidRow(
+  fluidRow(width = 4,
     column(3,
            selectInput("State", "Select State", choices = state.abb, selected = 'AL', multiple = FALSE,
                        selectize = TRUE, width = NULL, size = NULL)
@@ -260,7 +271,7 @@ ui <- fluidPage(
   ),
   
   hr(),
-  fluidRow(leafletOutput("mymap",height = 450, width = 900))
+  fluidRow(width = 4,leafletOutput("mymap",height = 580, width = 1200))
   
 )
 
