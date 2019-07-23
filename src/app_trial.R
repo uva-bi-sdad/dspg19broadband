@@ -20,15 +20,15 @@ acs_fcc_shapes <- function(state, geography, r_u){
     fcc <- fread(fcc_file, colClasses=c(state="character",county="character",tract_short="character", tract="character"))   
   }
   
-  q <- read.csv("./data/working/merged_by_rural_urban.csv")
+  #q <- read.csv("./data/working/merged_by_rural_urban.csv")
 
   #merge fcc & acs 
   if(geography =='Block Group'){
-    fcc_acs = merge(fcc, acs, by.x = c('state', 'county', 'tract', 'block_group'), by.y = c('state', 'county', 'census_tract', 'block_group')) %>% 
-      dt_filter(state==state_fips)
+    fcc_acs = merge(fcc, acs, by.x = c('state', 'county', 'tract_short'), by.y = c('state', 'county', 'census_tract')) %>% 
+      dt_filter(state==stateabbr)
   } else if(geography == "Census Tract") {
     fcc_acs = merge(fcc, acs, by.x = c('state', 'county', 'tract_short'), by.y = c('state', 'county', 'census_tract')) %>%
-      dt_filter(state==state_fips)  
+      dt_filter(state==stateabbr)  
   }
   #pull shapes for state
   con <- DBI::dbConnect(drv = RPostgreSQL::PostgreSQL(),
