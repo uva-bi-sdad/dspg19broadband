@@ -1,6 +1,6 @@
 # Read In Packages
-for (pkg in c("tableHTML","usmap","shinydashboard", "shiny", "leaflet", "dplyr", "httr", "here", "maptools","gpclib","sp", 'sf', 'ggplot2', 'ggmap', 
-              'tidyverse', 'tigris', 'acs', 'data.table', 'maditr', 'viridis', 'ggplot2', 'usmap')) {
+for (pkg in c("tableHTML","usmap","shinydashboard", "shiny", "leaflet", "dplyr", "httr", "here", "maptools","gpclib","sp", "sf", "ggplot2", "ggmap", 
+              "tidyverse", "tigris", "acs", "data.table", "maditr", "viridis", "ggplot2", "usmap","dplyr")) {
   library(pkg, character.only = TRUE)
 }
 
@@ -12,19 +12,16 @@ acs_fcc_shapes <- function(state, geography, r_u){
     acs_file <- here("data", "working", "summary_acs.csv")
     acs <- fread(acs_file, colClasses=c(state="character",county="character",census_tract="character", block_group = "character"))
     fcc_file <- here("data", "working", "fcc_processed.csv")
-    fcc <- fread(fcc_file, colClasses=c(state="character",county="character",tract="character", block_group = "character")) 
+    fcc <- fread(fcc_file, colClasses=c(state="character", county="character",tract="character", block_group = "character")) 
   } else if(geography == "Census Tract"){
     acs_file <- here("data", "working", "summary_acs_census_tract.csv")
     acs <- fread(acs_file, colClasses=c(state="character",county="character",census_tract="character"))
     fcc_file <- here("data", "working", "fcc_processed_tract.csv")
     fcc <- fread(fcc_file, colClasses=c(state="character",county="character",tract_short="character", tract="character"))   
-  } else if(geography == "City Level"){
-    bbnow_file <- here("data", "working", "merged_by_rural_urban.csv")
-    acs <- fread(acs_file, colClasses=c(state="character",county="character",census_tract="character"))
-    fcc_file <- here("data", "working", "fcc_processed_tract.csv")
-    fcc <- fread(fcc_file, colClasses=c(state="character",county="character",tract_short="character", tract="character"))
-  }}
+  }
   
+  q <- read.csv("./data/working/merged_by_rural_urban.csv")
+
   #merge fcc & acs 
   if(geography =='Block Group'){
     fcc_acs = merge(fcc, acs, by.x = c('state', 'county', 'tract', 'block_group'), by.y = c('state', 'county', 'census_tract', 'block_group')) %>% 
@@ -32,9 +29,6 @@ acs_fcc_shapes <- function(state, geography, r_u){
   } else if(geography == "Census Tract") {
     fcc_acs = merge(fcc, acs, by.x = c('state', 'county', 'tract_short'), by.y = c('state', 'county', 'census_tract')) %>%
       dt_filter(state==state_fips)  
-  } else if(geography == "City Level"){
-    full <- merge(fcc_acs, geo, by.x = c('state', 'county', 'tract_short'), by.y =c('STATEFP','COUNTYFP','TRACTCE')) %>%
-      dt_filter(state==state_fips)
   }
   #pull shapes for state
   con <- DBI::dbConnect(drv = RPostgreSQL::PostgreSQL(),
@@ -48,8 +42,6 @@ acs_fcc_shapes <- function(state, geography, r_u){
     geo = st_read(con, c("census_cb", sprintf("cb_2018_%s_bg_500k", state_fips)))
   } else if(geography == "Census Tract"){
     geo = st_read(con, c("census_cb", sprintf("cb_2018_%s_tract_500k", state_fips)))  
-  } else if(geography == "City Level"){
-    geo = st_read(con, c("census_cb", sprintf("cb_2018_%s_tract_500k", state_fips)))
   }
   
   DBI::dbDisconnect(con)
@@ -72,14 +64,7 @@ acs_fcc_shapes <- function(state, geography, r_u){
                                   pcat_all_10x1_max, State, County_Name, Population_2010, RUCC_2013, 
                                   B28002_004_per, B28002_007_per, ALAND, AWATER, geometry) %>% 
       dt_mutate(rural_urban = ifelse(RUCC_2013 < 4, 'Urban','Rural'))
-  } else if(geography == "City Level"){
-    full <- merge(fcc_acs, geo, by.x = c('state', 'county', 'tract_short'), by.y =c('STATEFP','COUNTYFP','TRACTCE'))
-    full_sf <- full %>% dt_select(state,county,tract,consumer_has, business_has,
-                                  maxaddown, maxcirdown, stateabbr, num_ppl, availability_cons,
-                                  availability_bus, pcat_all_pct_min, pcat_all_pct_max, pcat_all_10x1_min,
-                                  pcat_all_10x1_max, State, County_Name, Population_2010, RUCC_2013, 
-                                  B28002_004_per, B28002_007_per, ALAND, AWATER, geometry) %>% 
-      dt_mutate(rural_urban = ifelse(RUCC_2013 < 4, 'Urban','Rural'))
+  }
   
   #allow to filter by rural/urban
   if(r_u == 'Rural') {
@@ -91,10 +76,13 @@ acs_fcc_shapes <- function(state, geography, r_u){
   }
 }
 
-make_state_map <- function(state, geography, r_u){
+
+make_state_map <- function(stateabbr, geography, r_u){
   print("Building Map...")
   if(geography  == 'Block Group'){
-    data <- acs_fcc_shapes(state, geography, r_u) %>% st_transform(4326)
+    data <- acs_fcc_shapes(stateabbr, geography, r_u) %>% st_transform(4326)
+    q <- read.csv("./data/working/merged_by_rural_urban.csv") %<%
+      dt_filter(stateabbr = stateid)
     labels <- lapply(
       paste("<strong>County: </strong>",
             data$County_Name,
@@ -167,8 +155,10 @@ make_state_map <- function(state, geography, r_u){
                    title = "Percentile Difference: FCC v ACS",
                    opacity = 1)
     
-  } else if(geography == 'Census Tract') {
-    data <- acs_fcc_shapes(state, geography, r_u) %>% st_transform(4326)
+    m <- addCircles(m, data = q, lng = ~long, lat = ~lat, weight = 1, radius = ~coverage, label = ~as.character(city))
+   
+  } else {
+    data <- acs_fcc_shapes(stateabbr, geography, r_u) %>% st_transform(4326)
     labels <- lapply(
       paste("<strong>County:</strong>",
             data$County_Name,
@@ -235,66 +225,23 @@ make_state_map <- function(state, geography, r_u){
                      fillOpacity = 0.7
     ) 
     
-    else if (geography=='City Level'){
-      data <- acs_fcc_shapes(state, geography, r_u) %>% st_transform(4326)
-      labels <- lapply(
-        paste("<strong>city</strong>:",
-              data$city,
-              "<br />",
-              "<strong>Population (2010)</strong>:",
-              data$Population_2010,
-              "<br />",
-              "<strong>RUCC</strong>",
-              data$RUCC_2013,
-              "<br />",
-              "<strong>county</strong>",
-              data$county,
-              "<br />",
-              "<strong>City Covergae (%)</strong>",
-              data$coverage,
-              "<br />",
-              "<strong>ACS Internet Coverage in County  </strong>",
-              round(data$B28002_007_per,1),"%"
-              
-              
-        ),
-        htmltools::HTML
-      )
-      
-      m = leaflet(data = data)
-      m <- addPolygons(m,
-                       stroke = TRUE,
-                       weight = .6,
-                       smoothFactor = 0.2,
-                       label = labels,
-                       highlight = highlightOptions(
-                         weight = 5,
-                         color = "black",
-                         bringToFront = TRUE),
-                       
-                       labelOptions = labelOptions(direction = "bottom",
-                                                   style = list(
-                                                     "font-size" = "12px",
-                                                     "border-color" = "rgba(0,0,0,0.5)",
-                                                     direction = "auto"
-                                                   )),
-                       fillColor = ~qpal(round(data$availability_cons*100 - data$B28002_007_per,1)),
-                       fillOpacity = 0.7
-      )
-      
-      labelOptions = labelOptions(direction = "bottom",
-                                  style = list(
-                                    "font-size" = "12px",
-                                    "border-color" = "rgba(0,0,0,0.5)",
-                                    direction = "auto"
-                                  ))
-      fillColor = ~qpal(round(data$availability_cons*100 - data$B28002_004_per,1))
-      fillOpacity = 0.7
-      m
-    }
+    labelOptions = labelOptions(direction = "bottom",
+                                style = list(
+                                  "font-size" = "12px",
+                                  "border-color" = "rgba(0,0,0,0.5)",
+                                  direction = "auto"
+                                ))
+    fillColor = ~qpal(round(data$availability_cons*100 - data$B28002_004_per,1))
+    fillOpacity = 0.7
+    m <- addLegend(m,
+                   position = "bottomleft", pal = qpal, values = ~(round(availability_cons*100 - B28002_007_per,1)),
+                   title = "Percentile Difference: FCC v ACS",
+                   opacity = 1)
+    
+  
+    m
   }
 }
-    
 
 server <- function(input,output,session){
   data <- reactive({
