@@ -6,8 +6,8 @@ for (pkg in c("tableHTML","usmap","shinydashboard", "shiny", "leaflet", "dplyr",
 
 
 # Create Data for Plotting
-acs_fcc_shapes <- function(state, geography, r_u){
-  state_fips = usmap::fips(state)
+acs_fcc_shapes <- function(State, geography, r_u){
+  state_fips = usmap::fips(fcc$State)
   if(geography == "Block Group"){
     acs_file <- here("data", "working", "summary_acs.csv")
     acs <- fread(acs_file, colClasses=c(state="character",county="character",census_tract="character", block_group = "character"))
@@ -95,7 +95,7 @@ make_state_map <- function(stateabbr, geography, r_u){
             "<br />",
             "<strong>Land Area (square meters): </strong>",
             formatC(data$ALAND, format="f", big.mark = ",", digits = 0),
-            "<br />",
+            "<br />",'2'
             "<strong>Population (2010): </strong>",
             data$Population_2010,
             "<br />",
