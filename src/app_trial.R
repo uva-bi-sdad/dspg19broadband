@@ -1,18 +1,19 @@
 # Read In Packages
-for (pkg in c("tableHTML","usmap","shinydashboard", "shiny", "leaflet", "dplyr", "httr", "here", "maptools","gpclib","sp", "sf", "ggplot2", "ggmap", 
-              "tidyverse", "tigris", "acs", "data.table", "maditr", "viridis", "ggplot2", "usmap","dplyr")) {
+for (pkg in c("tableHTML","usmap","shinydashboard", "shiny", "leaflet", "dplyr", "httr", "here", "maptools","gpclib","sp", 'sf', 'ggplot2', 'ggmap', 
+              'tidyverse', 'tigris', 'acs', 'data.table', 'maditr', 'viridis', 'ggplot2', 'usmap')) {
   library(pkg, character.only = TRUE)
 }
 
 
+
 # Create Data for Plotting
-acs_fcc_shapes <- function(State, geography, r_u){
-  state_fips = usmap::fips(fcc$State)
+acs_fcc_shapes <- function(state, geography, r_u){
+  state_fips = usmap::fips(state)
   if(geography == "Block Group"){
     acs_file <- here("data", "working", "summary_acs.csv")
     acs <- fread(acs_file, colClasses=c(state="character",county="character",census_tract="character", block_group = "character"))
     fcc_file <- here("data", "working", "fcc_processed.csv")
-    fcc <- fread(fcc_file, colClasses=c(state="character", county="character",tract="character", block_group = "character")) 
+    fcc <- fread(fcc_file, colClasses=c(state="character",county="character",tract="character", block_group = "character")) 
   } else if(geography == "Census Tract"){
     acs_file <- here("data", "working", "summary_acs_census_tract.csv")
     acs <- fread(acs_file, colClasses=c(state="character",county="character",census_tract="character"))
@@ -20,15 +21,13 @@ acs_fcc_shapes <- function(State, geography, r_u){
     fcc <- fread(fcc_file, colClasses=c(state="character",county="character",tract_short="character", tract="character"))   
   }
   
-  #q <- read.csv("./data/working/merged_by_rural_urban.csv")
-
   #merge fcc & acs 
   if(geography =='Block Group'){
-    fcc_acs = merge(fcc, acs, by.x = c('state', 'county', 'tract_short'), by.y = c('state', 'county', 'census_tract')) %>% 
-      dt_filter(state==stateabbr)
+    fcc_acs = merge(fcc, acs, by.x = c('state', 'county', 'tract', 'block_group'), by.y = c('state', 'county', 'census_tract', 'block_group')) %>% 
+      dt_filter(state==state_fips)
   } else if(geography == "Census Tract") {
     fcc_acs = merge(fcc, acs, by.x = c('state', 'county', 'tract_short'), by.y = c('state', 'county', 'census_tract')) %>%
-      dt_filter(state==stateabbr)  
+      dt_filter(state==state_fips)  
   }
   #pull shapes for state
   con <- DBI::dbConnect(drv = RPostgreSQL::PostgreSQL(),
@@ -64,6 +63,7 @@ acs_fcc_shapes <- function(State, geography, r_u){
                                   pcat_all_10x1_max, State, County_Name, Population_2010, RUCC_2013, 
                                   B28002_004_per, B28002_007_per, ALAND, AWATER, geometry) %>% 
       dt_mutate(rural_urban = ifelse(RUCC_2013 < 4, 'Urban','Rural'))
+    
   }
   
   #allow to filter by rural/urban
@@ -77,12 +77,15 @@ acs_fcc_shapes <- function(State, geography, r_u){
 }
 
 
+
+
+
 make_state_map <- function(stateabbr, geography, r_u){
   print("Building Map...")
   if(geography  == 'Block Group'){
-    data <- acs_fcc_shapes(stateabbr, geography, r_u) %>% st_transform(4326)
-    q <- read.csv("./data/working/merged_by_rural_urban.csv") %<%
-      dt_filter(stateabbr = stateid)
+    data <- acs_fcc_shapes(state, geography, r_u) %>% st_transform(4326)
+    dat <- here('data', 'working', 'merged_by_rural_urban.csv')
+    q <- read.csv(dat) %>% data.table() %>% dt_mutate(rural_urban = ifelse(RUCC_2013 < 4, 'Urban','Rural'))%>% dt_filter(stateid == unique(data$stateabbr)) %>% dt_filter(rural_urban == unique(data$rural_urban))
     labels <- lapply(
       paste("<strong>County: </strong>",
             data$County_Name,
@@ -95,7 +98,7 @@ make_state_map <- function(stateabbr, geography, r_u){
             "<br />",
             "<strong>Land Area (square meters): </strong>",
             formatC(data$ALAND, format="f", big.mark = ",", digits = 0),
-            "<br />",'2'
+            "<br />",
             "<strong>Population (2010): </strong>",
             data$Population_2010,
             "<br />",
@@ -155,10 +158,10 @@ make_state_map <- function(stateabbr, geography, r_u){
                    title = "Percentile Difference: FCC v ACS",
                    opacity = 1)
     
-    m <- addCircles(m, data = q, lng = ~long, lat = ~lat, weight = 1, radius = ~coverage, label = ~as.character(city))
-   
+    m <- addCircles(m,lng = q$long, lat = q$lat, label = as.character(q$city))
+    m
   } else {
-    data <- acs_fcc_shapes(stateabbr, geography, r_u) %>% st_transform(4326)
+    data <- acs_fcc_shapes(state, geography, r_u) %>% st_transform(4326)
     labels <- lapply(
       paste("<strong>County:</strong>",
             data$County_Name,
@@ -237,9 +240,7 @@ make_state_map <- function(stateabbr, geography, r_u){
                    position = "bottomleft", pal = qpal, values = ~(round(availability_cons*100 - B28002_007_per,1)),
                    title = "Percentile Difference: FCC v ACS",
                    opacity = 1)
-    
-  
-    m
+    m <- addCircles(m,lng = q$long, lat = q$lat,label = as.character(q$city))
   }
 }
 
