@@ -7,9 +7,9 @@ library(tidyr)
 #EDUCATION
 edu <- read.csv("data/original/acs5yr/acsB15003.csv")
 
-edu <- edu[,-c(2, 5)]
+edu <- edu[,-c(1, 6)]
 
-edu <- reshape(edu, idvar = "GEOID", timevar = "variable", direction = "wide")
+edu <- reshape(edu, idvar = c("GEOID", "NAME"), timevar = "variable", direction = "wide")
 
 edu <- edu %>%
   rename(
@@ -61,6 +61,7 @@ edu$B15003_013_per = percent(edu$B15003_013)
 edu$B15003_014_per = percent(edu$B15003_014)
 edu$B15003_015_per = percent(edu$B15003_015)
 edu$B15003_016_per = percent(edu$B15003_016)
+
 edu$B15003_017_per = percent(edu$B15003_017)
 edu$B15003_018_per = percent(edu$B15003_018)
 edu$B15003_019_per = percent(edu$B15003_019)
@@ -71,15 +72,15 @@ edu$B15003_023_per = percent(edu$B15003_023)
 edu$B15003_024_per = percent(edu$B15003_024)
 edu$B15003_025_per = percent(edu$B15003_025)
 
-#write.csv(edu, "data/working/acs_transform/acs_edu.csv")
+write.csv(edu, "data/working/acs_transform/acs_edu.csv")
 
 # HISPANIC OR LATINO ETHNICITY
 
-ethn <- read.csv("data/original/acs5yr/acsB03003 .csv")
+ethn <- read.csv("data/original/acs5yr/acsB03003.csv")
 
-ethn <- ethn[,-c(2, 5)]
+ethn <- ethn[,-c(1, 6)]
 
-ethn <- reshape(ethn, idvar = "GEOID", timevar = "variable", direction = "wide")
+ethn <- reshape(ethn, idvar = c("GEOID", "NAME"), timevar = "variable", direction = "wide")
 
 ethn <- ethn %>%
   rename(
@@ -96,16 +97,16 @@ percent <- function(x){
 ethn$B03003_002_per = percent(ethn$B03003_002)
 ethn$B03003_003_per = percent(ethn$B03003_003)
 
-#write.csv(ethn, "data/working/acs_transform/acs_ethn.csv")
+write.csv(ethn, "data/working/acs_transform/acs_ethn.csv")
 
 
 #EMPLOYMENT
 
 empl <- read.csv("data/original/acs5yr/acsB23025.csv")
 
-empl <- empl[,-c(2, 5)]
+empl <- empl[,-c(1, 6)]
 
-empl <- reshape(empl, idvar = "GEOID", timevar = "variable", direction = "wide")
+empl <- reshape(empl, idvar = c("GEOID", "NAME"), timevar = "variable", direction = "wide")
 
 empl <- empl %>%
   rename(
@@ -132,15 +133,15 @@ empl$B23025_006_per = percent(empl$B23025_006)
 empl$B23025_007_per = percent(empl$B23025_007)
 
 
-#write.csv(empl, "data/working/acs_transform/acs_empl.csv")
+write.csv(empl, "data/working/acs_transform/acs_empl.csv")
 
 #RACE
 
 race <- read.csv("data/original/acs5yr/acsB02001.csv")
 
-race <- race[,-c(2, 5)]
+race <- race[,-c(1, 6)]
 
-race <- reshape(race, idvar = "GEOID", timevar = "variable", direction = "wide")
+race <- reshape(race, idvar = c("GEOID", "NAME"), timevar = "variable", direction = "wide")
 
 race <- race %>%
   rename(
@@ -172,15 +173,15 @@ race$B02001_008_per = percent(race$B02001_008)
 race$B02001_009_per = percent(race$B02001_009)
 race$B02001_010_per = percent(race$B02001_010)
 
-#write.csv(race, "data/working/acs_transform/acs_race.csv")
+write.csv(race, "data/working/acs_transform/acs_race.csv")
 
 #INCOME TO POVERTY LEVEL RATIO
 
-pov <- read.csv("data/original/acs5yr/acsB17026 .csv")
+pov <- read.csv("data/original/acs5yr/acsB17026.csv")
 
-pov <- pov[,-c(2, 5)]
+pov <- pov[,-c(1, 6)]
 
-pov <- reshape(pov, idvar = "GEOID", timevar = "variable", direction = "wide")
+pov <- reshape(pov, idvar = c("GEOID", "NAME"), timevar = "variable", direction = "wide")
 
 pov <- pov %>%
   rename(
@@ -218,4 +219,5 @@ pov$B17026_011_per = percent(pov$B17026_011)
 pov$B17026_012_per = percent(pov$B17026_012)
 pov$B17026_013_per = percent(pov$B17026_013)
 
-#write.csv(pov, "data/working/acs_transform/acs_pov.csv")
+write.csv(pov, "data/working/acs_transform/acs_pov.csv")
+x <- read.csv("data/working/acs_transform/acs_pov.csv")

@@ -56,4 +56,4 @@ for(i in ind_failed){
 
 race <- rbindlist(race_list)
 
-# write_csv(race,"~/../sdad/project_data/usda/dspg2019broadband/working/acs5yr/acsB02001.csv")
+write.csv(race,"data/original/acs5yr/acsB02001.csv")

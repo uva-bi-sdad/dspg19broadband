@@ -56,4 +56,4 @@ for(i in ind_failed){
 
 poverty <- rbindlist(poverty_list)
 
-# write_csv(poverty,"~/../sdad/project_data/usda/dspg2019broadband/working/acs5yr/acsB17026.csv")
+write.csv(poverty,"data/original/acs5yr/acsB17026.csv")
