@@ -74,6 +74,44 @@ acs_fcc_shapes <- function(state, geography, r_u){
   }
 }
 
+county_shapes <- function(state, r_u){
+  state_fips = usmap::fips(state)
+  mic <- here("data", "original", "microsoft", 'microsoft.csv')
+  microsoft <- read.csv(mic, colClasses=c(ST="character",COUNTY.ID="character", 
+                                          BROADBAND.USAGE = "numeric", BROADBAND.AVAILABILITY.PER.FCC = "numeric"),
+                        na.strings = "-")
+  microsoft$county<- ifelse(nchar(microsoft$COUNTY.ID) !=5 ,gsub(" ", "", paste("0",microsoft$COUNTY.ID), fixed = TRUE), microsoft$COUNTY.ID)
+  
+  # merge with fcc
+  fcc_data <- here("data", "working", "fcc_processed_county_updated.csv")
+  fcc_county <- read.csv(fcc_data, colClasses=c(state="character",county="character"))
+  fcc_mic = merge(fcc_county, microsoft, by = 'county')
+  # get shapes
+  con <- DBI::dbConnect(drv = RPostgreSQL::PostgreSQL(),
+                        dbname = "gis",
+                        host = "postgis_1",
+                        port = "5432",
+                        user = Sys.getenv("db_userid"),
+                        password = Sys.getenv("db_pwd"))
+  
+  geo = st_read(con, c("census_cb", "cb_2016_us_county_500k"))
+  DBI::dbDisconnect(con)
+  
+  # merge with shapes
+  full = merge(fcc_mic, geo, by.x = 'county', by.y = 'GEOID') 
+  full_st = full[full$STATEFP == state_fips,] %>% data.table() %>%
+    dt_mutate(rural_urban = ifelse(RUCC_2013 < 4, 'Urban','Rural')) %>% st_as_sf()
+  
+  #allow to filter by rural/urban
+  if(r_u == 'Rural') {
+    full_st %>% data.table() %>% dt_filter(rural_urban == 'Rural') %>% st_as_sf()
+  } else if (r_u == 'Urban') {
+    full_st %>% data.table() %>% dt_filter(rural_urban == 'Urban') %>% st_as_sf()
+  } else if (r_u == 'All') {
+    full_st = full_st %>% st_as_sf()
+  }
+}
+
 make_state_map <- function(state, geography, r_u){
   print("Building Map...")
   if(geography  == 'Block Group'){
@@ -123,7 +161,7 @@ make_state_map <- function(state, geography, r_u){
     ),
     htmltools::HTML
   )
-  qpal <- colorQuantile("YlOrRd", round(data$availability_cons*100 - data$B28002_007_per,1), n = 5)
+  qpal <- colorQuantile("YlOrRd", abs(round(data$availability_cons*100 - data$B28002_007_per,1)), n = 5)
   m = leaflet(data = data)
   m <- addPolygons(m,
                    stroke = TRUE,
@@ -142,15 +180,15 @@ make_state_map <- function(state, geography, r_u){
                                                  "border-color" = "rgba(0,0,0,0.5)",
                                                  direction = "auto"
                                                )),
-                   fillColor = ~qpal(round(data$availability_cons*100 - data$B28002_007_per,1)),
+                   fillColor = ~qpal(abs(round(data$availability_cons*100 - data$B28002_007_per,1))),
                    fillOpacity = 0.7
                    )
   m <- addLegend(m,
-                 position = "bottomleft", pal = qpal, values = ~(round(availability_cons*100 - B28002_007_per,1)),
+                 position = "bottomleft", pal = qpal, values = ~(abs(round(availability_cons*100 - B28002_007_per,1))),
                  title = "Percentile Difference: FCC v ACS",
                  opacity = 1)
               
-  } else {
+  } else if (geography  == 'Census Tract') {
     data <- acs_fcc_shapes(state, geography, r_u) %>% st_transform(4326)
     labels <- lapply(
       paste("<strong>County:</strong>",
@@ -194,7 +232,7 @@ make_state_map <- function(state, geography, r_u){
       ),
       htmltools::HTML
     )
-    qpal <- colorQuantile("YlOrRd", round(data$availability_cons*100 - data$B28002_007_per,1), n = 5)
+    qpal <- colorQuantile("YlOrRd", abs(round(data$availability_cons*100 - data$B28002_007_per,1)), n = 5)
     m = leaflet(data = data)
     m <- addPolygons(m,
                      stroke = TRUE,
@@ -214,7 +252,7 @@ make_state_map <- function(state, geography, r_u){
                                                    direction = "auto",
                                                    offset = c(1, 5)
                                                  )),
-                     fillColor = ~qpal(round(data$availability_cons*100 - data$B28002_007_per,1)),
+                     fillColor = ~qpal(abs(round(data$availability_cons*100 - data$B28002_007_per,1))),
                      fillOpacity = 0.7
     ) 
     
@@ -227,9 +265,87 @@ make_state_map <- function(state, geography, r_u){
     fillColor = ~qpal(round(data$availability_cons*100 - data$B28002_004_per,1))
     fillOpacity = 0.7
     m <- addLegend(m,
-                  position = "bottomleft", pal = qpal, values = ~(round(availability_cons*100 - B28002_007_per,1)),
+                  position = "bottomleft", pal = qpal, values = ~(abs(round(availability_cons*100 - B28002_007_per,1))),
                   title = "Percentile Difference: FCC v ACS",
                   opacity = 1)
+    m
+  } else if (geography  == 'County') {
+    data <- county_shapes(state, r_u) %>% st_transform(4326)
+    labels <- lapply(
+      paste("<strong>County:</strong>",
+            data$COUNTY.NAME,
+            "<br />",
+            "<strong>Land Area (square meters): </strong>",
+            formatC(data$ALAND, format="f", big.mark = ",", digits = 0),
+            "<br />",
+            "<strong>Population (2010): </strong>",
+            data$Population_2010,
+            "<br />",
+            "<strong>RUCC: </strong>",
+            data$RUCC_2013,
+            "<br />",
+            "<strong>Microsoft Coverage per FCC: Broadband (004): </strong>",
+            round(data$BROADBAND.AVAILABILITY.PER.FCC*100,1),"%",
+            "<br />",
+            "<strong>Microsoft Usage: </strong>",
+            round(data$BROADBAND.USAGE*100,1),"%",
+            "<br />",
+            "<strong>FCC Subscription Coverage (Max): </strong>",
+            round(data$max_pcat_all_per*100,1),"%",
+            "<br />",
+            "<strong>FCC Subscription Coverage (Min): </strong>",
+            round(data$min_pcat_all_per*100,1),"%",
+            "<br />",
+            "<strong>Microsoft Usage In FCC Subs Bin: </strong>",
+            data$BROADBAND.USAGE*100 < data$max_pcat_all_per*100 & data$BROADBAND.USAGE*100 > data$min_pcat_all_per*100,
+            "<br />",
+            "<strong>FCC Coverage (Contractual): </strong>",
+            round(data$availability_cont*100,1),"%",
+            "<br />",
+            "<strong>FCC Coverage (Advertised): </strong>",
+            round(data$availability_adv*100,1),"%",
+            "<br />",
+            "<strong>Percentile Discrepancy: </strong>", ### change disicrepancy to coverage versus availabiliity 
+            round(data$availability_cont*100 - data$BROADBAND.AVAILABILITY.PER.FCC*100,1),"%"
+      ),
+      htmltools::HTML
+    )
+    qpal <- colorQuantile("YlOrRd", abs(round(data$availability_cont*100 - data$BROADBAND.AVAILABILITY.PER.FCC*100,1)), n = 5)
+    m = leaflet(data = data)
+    m <- addPolygons(m,
+                     stroke = TRUE,
+                     weight = 1,
+                     color = "lightgray",
+                     smoothFactor = 0.2,
+                     label = labels,
+                     highlight = highlightOptions(
+                       weight = 5,
+                       color = "black",
+                       bringToFront = TRUE),
+                     
+                     labelOptions = labelOptions(direction = "bottom",
+                                                 style = list(
+                                                   "font-size" = "12px",
+                                                   "border-color" = "rgba(0,0,0,0.5)",
+                                                   direction = "auto",
+                                                   offset = c(1, 5)
+                                                 )),
+                     fillColor = ~qpal(abs(round(data$availability_cont*100 - data$BROADBAND.AVAILABILITY.PER.FCC*100,1))),
+                     fillOpacity = 0.7
+    ) 
+    
+    labelOptions = labelOptions(direction = "bottom",
+                                style = list(
+                                  "font-size" = "12px",
+                                  "border-color" = "rgba(0,0,0,0.5)",
+                                  direction = "auto"
+                                ))
+    fillColor = ~qpal(round(data$availability_cont*100 - data$BROADBAND.AVAILABILITY.PER.FCC*100,1))
+    fillOpacity = 0.7
+    m <- addLegend(m,
+                   position = "bottomleft", pal = qpal, values = ~(abs(round(availability_cont*100 - BROADBAND.AVAILABILITY.PER.FCC*100,1))),
+                   title = "Percentile Difference: FCC v Microsoft",
+                   opacity = 1)
     m
   }
 }
@@ -242,6 +358,9 @@ server <- function(input,output,session){
   output$mymap <- renderLeaflet({
     make_state_map(input$State, input$Geography, input$R_U)
   })
+  
+  definitions <- data.frame(Geography = 'blah1',Metric = 'blah2', Definition = 'blah3')
+  output$table <- renderTable(data.frame(definitions))
 }
 
 ui <- fluidPage(
@@ -261,7 +380,7 @@ ui <- fluidPage(
                        selectize = TRUE, width = NULL, size = NULL)
     ),
     column(3, 
-           selectInput("Geography", "Select Geography", c("Census Tract", "Block Group"), selected = 'Census Tract', multiple = FALSE,
+           selectInput("Geography", "Select Geography", c("County", "Census Tract", "Block Group"), selected = 'Census Tract', multiple = FALSE,
                        selectize = TRUE, width = NULL, size = NULL)
     ),
     column(3,
@@ -271,7 +390,10 @@ ui <- fluidPage(
   ),
   
   hr(),
-  fluidRow(width = 4,leafletOutput("mymap",height = 580, width = 1200))
+  fluidRow(width = 4,leafletOutput("mymap",height = 580, width = 1200)),
+  hr(),
+  fluidRow(width = 4, 
+           h3('(Test) Table of Definitions'), dataTableOutput('table'))
   
 )
 
