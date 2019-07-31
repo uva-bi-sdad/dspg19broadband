@@ -86,6 +86,14 @@ h2 {
   color: rgb(19, 73, 135);
 }
 
+h3 {
+  width: 200%;
+  padding: 5px;
+  font-family: Monaco;
+  font-weight: bold;
+  text-align:center;
+  color: rgb(19, 73, 135);
+}
 .col-sm-8 {
   font-size: 10px;
 }
@@ -419,6 +427,7 @@ h2, .h2 {
 
 h3, .h3 {
   font-size: 1.75rem;
+  color: rgb(169, 68, 66);
 }
 
 h4, .h4 {
@@ -1565,6 +1574,7 @@ pre code {
   width: 100%;
   margin-bottom: 1rem;
   color: #212529;
+  font-size: 1.3rem;
 }
 
 .table th,
@@ -2354,7 +2364,7 @@ textarea.form-control {
   display: -ms-flexbox;
   display: flex;
   -ms-flex-flow: row wrap;
-  flex-flow: row wrap;
+  flex-flow: column;
   -ms-flex-align: center;
   align-items: center;
 }
