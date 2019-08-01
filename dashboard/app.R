@@ -156,7 +156,7 @@ make_state_map <- function(state, geography, r_u){
           round(data$availability_cons*100,1),"%",
           "<br />",
           "<strong>Percentile Discrepancy: </strong>",
-          round(data$availability_cons*100 - data$B28002_007_per,1),"%"
+          abs(round(data$availability_cons*100 - data$B28002_007_per,1)),"%"
     ),
     htmltools::HTML
   )
@@ -257,7 +257,7 @@ make_state_map <- function(state, geography, r_u){
             round(data$availability_adv*100,1),"%",
             "<br />",
             "<strong>Percentile Discrepancy: </strong>",
-            round(data$availability_adv*100 - data$B28002_007_per,1),"%"
+            abs(round(data$availability_adv*100 - data$B28002_007_per,1)),"%"
       ),
       htmltools::HTML
     )
@@ -326,7 +326,7 @@ make_state_map <- function(state, geography, r_u){
             round(data$availability_adv*100,1),"%",
             "<br />",
             "<strong>Percentile Discrepancy: </strong>", 
-            round(data$availability_adv*100 - data$BROADBAND.USAGE*100,1),"%"
+            abs(round(data$availability_adv*100 - data$BROADBAND.USAGE*100,1)),"%"
       ),
       htmltools::HTML
     )
@@ -455,8 +455,8 @@ ui <- fluidPage(
   theme = "bootstrap.css",
   title = "Broadband DSPG 2019",
   
-  fluidRow(width = 4, column(2.5,
-                  img(src = 'ers_logo.png', class = 'topimage')
+  fluidRow(width = 5, column(2.5,
+                  img(src = png(logo.eps, width = 800, height = 50), class = 'topimage')
                   ),
            column(7, 
            h1('Broadband Coverage Discrepancy Map'))
