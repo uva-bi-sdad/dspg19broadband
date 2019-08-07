@@ -160,7 +160,10 @@ make_state_map <- function(state, geography, r_u){
     ),
     htmltools::HTML
   )
-  qpal <- colorQuantile("YlOrRd", abs(round(data$availability_cons*100 - data$B28002_007_per,1)), n = 5)
+  #qpal <- colorQuantile("YlOrRd", abs(round(data$availability_cons*100 - data$B28002_007_per,1)), n = 5)
+ 
+  bins <- c(0,20,40,60,80,100)
+  binpal<- colorBin("YlOrRd", abs(round(data$availability_adv*100 - data$B28002_007_per,1)),bins = bins,pretty = FALSE)
   m = leaflet(data = data)
   
   m <- addPolygons(m,
@@ -179,13 +182,17 @@ make_state_map <- function(state, geography, r_u){
                                                  "border-color" = "rgba(0,0,0,0.5)",
                                                  direction = "auto"
                                                )),
-                   fillColor = ~qpal(abs(round(data$availability_cons*100 - data$B28002_007_per,1))),
+                   fillColor = ~binpal(abs(round(data$availability_cons*100 - data$B28002_007_per,1))),
                    fillOpacity = 0.7
                    )
+
+  cl <- c("#FFFFB2","#FECC5C","#FD8D3C","#F03B20","#BD0026")
+  
+  leg <- c("0%-20%","20%-40%","40%-60%","60%-80%","80%-100%")  
   m <- addLegend(m,
-                 position = "bottomleft", pal = qpal, values = ~(abs(round(data$availability_cons*100 - data$B28002_007_per,1))),
+                 position = "bottomleft", colors = cl, values = ~(abs(round(data$availability_cons*100 - data$B28002_007_per,1))),
                  title = "Percentile Difference: FCC v ACS",
-                 opacity = 1)
+                 opacity = 1, labels = leg)
   label_cities <- lapply(
     paste("<strong>City: </strong>",
           as.character(q$city),
@@ -265,7 +272,9 @@ make_state_map <- function(state, geography, r_u){
       ),
       htmltools::HTML
     )
-    qpal <- colorQuantile("YlOrRd", abs(round(data$availability_adv*100 - data$B28002_007_per,1)), n = 5)
+    
+    bins <- c(0,20,40,60,80,100)
+    binpal<- colorBin("YlOrRd", abs(round(data$availability_adv*100 - data$B28002_007_per,1)),bins = bins,pretty = FALSE)
     m = leaflet(data = data)
     m <- addPolygons(m,
                      stroke = TRUE,
@@ -284,15 +293,17 @@ make_state_map <- function(state, geography, r_u){
                                                    direction = "auto",
                                                    offset = c(1, 5)
                                                  )),
-                     fillColor = ~qpal(abs(round(data$availability_adv*100 - data$B28002_007_per,1))),
+                     fillColor = ~binpal(abs(round(data$availability_adv*100 - data$B28002_007_per,1))),
                      fillOpacity = 0.7
     )
     
+    cl <- c("#FFFFB2","#FECC5C","#FD8D3C","#F03B20","#BD0026")
     
+    leg <- c("0%-20%","20%-40%","40%-60%","60%-80%","80%-100%")
     m <- addLegend(m,
-                  position = "bottomleft", pal = qpal, values = ~(abs(round(availability_adv*100 - B28002_007_per,1))),
+                  position = "bottomleft", colors = cl, values = ~(abs(round(availability_adv*100 - B28002_007_per,1))),
                   title = "Percentile Difference: FCC v ACS",
-                  opacity = 1)
+                  opacity = 1, labels = leg)
     label_cities <- lapply(
       paste("<strong>City: </strong>",
             as.character(q$city),
