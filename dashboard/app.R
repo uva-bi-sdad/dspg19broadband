@@ -155,7 +155,7 @@ make_state_map <- function(state, geography, r_u){
           "<strong>FCC Coverage (Advertised): </strong>",
           round(data$availability_cons*100,1),"%",
           "<br />",
-          "<strong>Percentile Discrepancy: </strong>",
+          "<strong>Percent Discrepancy: </strong>",
           abs(round(data$availability_cons*100 - data$B28002_007_per,1)),"%"
     ),
     htmltools::HTML
@@ -191,7 +191,7 @@ make_state_map <- function(state, geography, r_u){
   leg <- c("0%-20%","20%-40%","40%-60%","60%-80%","80%-100%")  
   m <- addLegend(m,
                  position = "bottomleft", colors = cl, values = ~(abs(round(data$availability_cons*100 - data$B28002_007_per,1))),
-                 title = "Percentile Difference: FCC v ACS",
+                 title = "Percent Difference: FCC v ACS",
                  opacity = 1, labels = leg)
   label_cities <- lapply(
     paste("<strong>City: </strong>",
@@ -267,7 +267,7 @@ make_state_map <- function(state, geography, r_u){
             "<strong>FCC Coverage (Advertised): </strong>",
             round(data$availability_adv*100,1),"%",
             "<br />",
-            "<strong>Percentile Discrepancy: </strong>",
+            "<strong>Percent Discrepancy: </strong>",
             abs(round(data$availability_adv*100 - data$B28002_007_per,1)),"%"
       ),
       htmltools::HTML
@@ -302,7 +302,7 @@ make_state_map <- function(state, geography, r_u){
     leg <- c("0%-20%","20%-40%","40%-60%","60%-80%","80%-100%")
     m <- addLegend(m,
                   position = "bottomleft", colors = cl, values = ~(abs(round(availability_adv*100 - B28002_007_per,1))),
-                  title = "Percentile Difference: FCC v ACS",
+                  title = "Percent Difference: FCC v ACS",
                   opacity = 1, labels = leg)
     label_cities <- lapply(
       paste("<strong>City: </strong>",
@@ -370,7 +370,7 @@ make_state_map <- function(state, geography, r_u){
             "<strong>FCC Coverage (Advertised): </strong>",
             round(data$availability_adv*100,1),"%",
             "<br />",
-            "<strong>Percentile Discrepancy: </strong>", 
+            "<strong>Percent Discrepancy: </strong>", 
             abs(round(data$availability_adv*100 - data$BROADBAND.USAGE*100,1)),"%"
       ),
       htmltools::HTML
@@ -414,7 +414,7 @@ make_state_map <- function(state, geography, r_u){
     
     m <- addLegend(m,
                    position = "bottomleft", colors = cl, values = ~(abs(round(availability_adv*100 - BROADBAND.USAGE*100,1))),
-                   title = "Percentile Difference: FCC vs Microsoft",
+                   title = "Percent Difference: FCC vs Microsoft",
                    opacity = 0.7, labels = leg)
     
     label_cities <- lapply(
@@ -467,17 +467,17 @@ server <- function(input,output,session){
                                        'FCC  Subscription Coverage',
                                        'ACS Internet in FCC Subs Bin',
                                        'FCC Coverage (Advertised)',
-                                       'Percentile Discrepancy',
+                                       'Percent Discrepancy',
                                        'ACS Coverage (Broadband of Any Type)', 
                                        'ACS Coverage (Excluding Cellular/Satellite)', 
                                        'FCC  Subscription Coverage',
                                        'ACS Internet in FCC Subs Bin',
                                        'FCC Coverage (Advertised)',
-                                       'Percentile Discrepancy',
+                                       'Percent Discrepancy',
                                        'Microsoft Usage',
                                        'FCC Subscription Coverage',
                                        'FCC Coverage (Advertised)',
-                                       'Percentile Discrepancy'
+                                       'Percent Discrepancy'
                                        ), 
                         Definition = c('This comes from ACS table B28002 within the ACS Households Universe and describes Presence and Types of Internet Subscriptions in Household.', 
                                        'This comes from ACS table B28002 within the ACS Households Universe and describes Presence and Type of Internet Subscription in Household. This metric discludes cellular data and satellite internet, and is used to compare to FCC Form 477 Coverage.', 
@@ -485,19 +485,19 @@ server <- function(input,output,session){
                                        'This metric compares the ACS Coverage (Excluding Cellular/Satellite) and the  FCC Subscription Coverage bins in order to see whether ACS self-reported connections fall within the FCC-reported bins for internet subscriptions.', 
                                        'This metric utilizes the Maximum advertised downstream speed/bandwidth offered by the provider in the block for Consumer service from FCC form 477 as well as the population data from the Decennial Census to calculate the proportion of
                                        the Census Tract population that has access to at least 1 provider that offers at least 25 Mbps maximum advertised downstream speed/bandwidth',
-                                       'This metric observes the discrepancy in percentile points between the FCC Coverage metric and the ACS Coverage (007) metric',
+                                       'This metric observes the discrepancy in percent points between the FCC Coverage metric and the ACS Coverage (007) metric',
                                        'This comes from ACS table B28002 within the ACS Households Universe and describes Presence and Types of Internet Subscriptions in Household.', 
                                        'This comes from ACS table B28002 within the ACS Households Universe and describes Presence and Type of Internet Subscription in Household. This metric discludes cellular data and satellite internet, and is used to compare to FCC Form 477 Coverage.', 
                                        'This data shows bins (Max and Min) for the number of internet connections/1000 households within the Block Group. We use the data as of December 31, 2015 and connections of at least 10 Mbps in order to create an approximately one-to-one comparison between the FCC and ACS data.',
                                        'This metric compares the ACS Coverage (Excluding Cellular/Satellite) and the  FCC Subscription Coverage bins in order to see whether ACS self-reported connections fall within the FCC-reported bins for internet subscriptions.', 
                                        'This metric utilizes the Maximum advertised downstream speed/bandwidth offered by the provider in the block for Consumer service from FCC form 477 as well as the population data from the Decennial Census to calculate the proportion of
                                        the Block Group population that has access to at least 1 provider that offers at least 25 Mbps maximum advertised downstream speed/bandwidth',
-                                       'This metric observes the discrepancy in percentile points between the FCC Coverage metric and the ACS Coverage (007) metric',
+                                       'This metric observes the discrepancy in percent points between the FCC Coverage metric and the ACS Coverage (007) metric',
                                        'This is is data from Microsoft that includes the percent of people in a particular county using the internet at 25 Mbps.',
                                        'This data shows bins (Max and Min) for the number of internet connections/1000 households within the County. We use the data as of December 31, 2015 and connections of at least 10 Mbps in order to create an approximately one-to-one comparison between the FCC and Microsoft data.',
                                        'This metric utilizes the Maximum advertised downstream speed/bandwidth offered by the provider in the block for Consumer service from FCC form 477 as well as the population data from the Decennial Census to calculate the proportion of
                                        the County population that has access to at least 1 provider that offers at least 25 Mbps maximum advertised downstream speed/bandwidth',
-                                       'This metric observes the discrepancy in percentile points between the FCC Coverage metric and the Microsoft Usage metric'
+                                       'This metric observes the discrepancy in percent points between the FCC Coverage metric and the Microsoft Usage metric'
                         ),
                         Source = c('2013-2017 American Community Survey  5-Year Estimates; B28002, Question 004', 
                                    '2013-2017 American Community Survey  5-Year Estimates; B28002, Question 007',
