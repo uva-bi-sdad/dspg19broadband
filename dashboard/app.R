@@ -32,8 +32,8 @@ acs_fcc_shapes <- function(state, geography, r_u){
                         dbname = "gis",
                         host = "postgis_1",
                         port = "5432",
-                        user = Sys.getenv("db_userid"),
-                        password = Sys.getenv("db_pwd"))
+                        user = "bband_user",
+                        password = "bband")
   # pull shapes on tract or bl level
   if(geography =='Block Group'){
   geo = st_read(con, c("census_cb", sprintf("cb_2018_%s_bg_500k", state_fips)))
@@ -90,8 +90,8 @@ county_shapes <- function(state, r_u){
                         dbname = "gis",
                         host = "postgis_1",
                         port = "5432",
-                        user = Sys.getenv("db_userid"),
-                        password = Sys.getenv("db_pwd"))
+                        user = "bband_user",
+                        password = "bband")
   
   geo = st_read(con, c("census_cb", "cb_2016_us_county_500k"))
   DBI::dbDisconnect(con)
