@@ -34,6 +34,7 @@ pop$GEOID <- ifelse(nchar(pop$GEOID) !=15 ,gsub(" ", "", paste("0",pop$GEOID), f
 pop[, tract := substr(GEOID, 1, 11)] 
 names(pop) <- tolower(names(pop))
 
+
 # Aggregate population to Tract Level
 pop_tract <- pop[, .(population = sum(value)), .(tract)]
 ```
@@ -47,7 +48,9 @@ fcc_tract <- fcc[, .(consumer_prov = ifelse(sum(consumer)>0,1,0), business_prov 
 
 ## Merge fcc and population data by block
 ```{r merge}
+
 fcc_pop <- merge(fcc_tract, pop_tract, by = 'tract', all.x = TRUE, all.y = FALSE)
+
 ```
 
 ## Count number of People who have at least one provider and total number of people in the Block Group
@@ -111,6 +114,7 @@ fcc_full <- merge(fcc_tract_final, connections, by.x = 'tract', by.y = 'tractcod
 ```{r rural/urban}
 r_u <- fread('~/dspg19broadband/data/working/ruralurban2013.csv', colClasses = 'character')
 fcc_full$county_full <- substr(fcc_full$geoid_12, 1,5)
+
 fcc_final  <- merge(fcc_full, r_u, by.x = 'county_full', by.y = 'FIPS', all.x = TRUE, all.y = FALSE)
 ```
 
@@ -118,6 +122,5 @@ fcc_final  <- merge(fcc_full, r_u, by.x = 'county_full', by.y = 'FIPS', all.x = 
 ```{r write out}
 write.csv(fcc_final, '~/dspg19broadband/data/working/fcc_processed.csv')
 ```
-
 
 

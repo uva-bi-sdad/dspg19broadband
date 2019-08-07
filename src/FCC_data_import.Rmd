@@ -16,6 +16,7 @@ Updated: April 8, 2019
 Type: CSV
 
 
+
 ```{r fcc 477, message=FALSE}
 for (pkg in c("httr", "here", "maptools","gpclib","sp", 'sf', 'ggplot2', 'ggmap', 'osmdata', 'tidyverse', 'tigris', 'acs')) {
   library(pkg, character.only = TRUE)
@@ -30,6 +31,7 @@ fcc_477 <- function() {
 }
 
 fcc_477()
+
 
 ```
 
@@ -48,6 +50,7 @@ service_map <- function() {
                   destfile = destzip)
   }
   unzip(destzip, exdir = destfolder)
+
 }
 
 service_map()
@@ -56,6 +59,7 @@ service_map()
 
 ```{r census tracts}
 state_blocks <- function(fips) {
+
   destzip <- here("data", "original", "Census Blocks",  sprintf('%s_census_blocks.zip', fips))
   destdir<- here("data", "original", "Census Blocks", sprintf('%s_census_blocks', fips))
   if (!dir.exists(destfile)) {
@@ -65,11 +69,13 @@ state_blocks <- function(fips) {
   }
   unzip(destzip, exdir = destfile)
   file.remove(destzip)
+
 }
 
 
 # get block groups for VA
 state_blocks(51)
+
 
 ```
 
