@@ -1,7 +1,18 @@
 ---
-title: "FCC Tract"
+title: "FCC_25_block"
 author: "Kateryna Savchyn"
-date: "7/11/2019"
+date: "7/29/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+---
+title: "FCC Data Manipulation"
+author: "Kateryna Savchyn"
+date: "7/2/2019"
 output: html_document
 ---
 
@@ -21,8 +32,7 @@ for (pkg in c("httr", "here", "maptools","gpclib","sp", 'sf', 'ggplot2', 'ggmap'
 fcc <-  fread('unzip -p  ~/dspg19broadband/data/original/FCC/FCC-Dec-2015/US-Fixed-without-Satellite-Dec2015.zip', 
               colClasses = c(BlockCode = "character"))
 fcc <- fcc[,c('HocoNum', 'BlockCode', 'MaxAdDown', 'MaxCIRDown', 'Consumer', 'Business', 'StateAbbr')]
-fcc[, tract:= substr(BlockCode, 1, 11)] 
-fcc[, GEOID := substr(BlockCode, 1, 12)] 
+fcc[, GEOID_12 := substr(BlockCode, 1, 12)] 
 names(fcc) <- tolower(names(fcc))
 ```
 
@@ -30,32 +40,33 @@ names(fcc) <- tolower(names(fcc))
 ```{r with pop}
 pop <- fread('~/dspg19broadband/data/working/population_by_census_block_2010.csv', colClasses = c(GEOID = "character"))
 # correct for data being stupid about trailing 0's
-pop$GEOID <- ifelse(nchar(pop$GEOID) !=15 ,gsub(" ", "", paste("0",pop$GEOID), fixed = TRUE), pop$GEOID)
-pop[, tract := substr(GEOID, 1, 11)] 
+pop$blockcode <- ifelse(nchar(pop$GEOID) !=15 ,gsub(" ", "", paste("0",pop$GEOID), fixed = TRUE), pop$GEOID)
+pop[, GEOID_12 := substr(GEOID, 1, 12)] 
 names(pop) <- tolower(names(pop))
-
-
-# Aggregate population to Tract Level
-pop_tract <- pop[, .(population = sum(value)), .(tract)]
 ```
 
-## Bring FCC Data up to the Tract Level (from companyXblock level)
-```{r agg fcc}
-fcc_tract <- fcc[, .(consumer_prov = ifelse(sum(consumer)>0,1,0), business_prov = ifelse(sum(business)>0,1,0), maxaddown = max(maxaddown), maxcirdown = max(maxcirdown), stateabbr = max(stateabbr), num_companies = length(unique(hoconum))), .(tract)]
-
-# if consumer_prov/business_prov = 1 there's at least one consumer provider in the tract
-```
-
-## Merge fcc and population data by block
+## Merge fcc and population data by individual block
 ```{r merge}
-
-fcc_pop <- merge(fcc_tract, pop_tract, by = 'tract', all.x = TRUE, all.y = FALSE)
-
+fcc_pop <- merge(fcc, pop, by = 'blockcode', all.x = TRUE, all.y = FALSE)
 ```
 
-## Count number of People who have at least one provider and total number of people in the Block Group
+
+## Bring FCC Data up to the Block Group Level (from companyXblock level)
+```{r agg fcc}
+fcc_threshold <- fcc_pop %>% dt_mutate(threshold_addown = maxaddown > 25) %>% dt_mutate(threshold_cirdown = maxcirdown > 25) 
+
+# bring up to block level first to get block level populations
+fcc_block <- fcc_threshold[, .(state = max(stateabbr), consumer = max(consumer), business = max(business), 
+                                threshold_addown = max(threshold_addown),  threshold_cirdown = max(threshold_cirdown), 
+                               maxaddown = max(maxaddown), maxcirdown = max(maxcirdown),
+                               block_population = mean(value)), .(blockcode)]
+```
+
+
+
+## Count number of People who have at least one provider with 25 MBPS and total number of people in the Block Group
 ```{r blocks to people}
-fcc_tract <- fcc_pop[, .(consumer_has = sum(consumer_prov*population), business_has = sum(business_prov*population), maxaddown = max(maxaddown), maxcirdown = max(maxcirdown), stateabbr = max(stateabbr), num_ppl = sum(population)), .(tract)]
+fcc_bg <- fcc_block[, .(consumer_has = sum(threshold_addown*block_population), business_has = sum(threshold_cirdown*block_population), maxaddown = max(maxaddown), maxcirdown = max(maxcirdown), stateabbr = max(state), num_ppl = sum(block_population)), .(blockcode)]
 ```
 
 ## Availability Metric
@@ -63,14 +74,16 @@ Availability = What % of the population has at least one provider in the Block G
 
 There are 950 GEOIDs that did not have population values in the raw population data (ex: geoid_12 = '100399000000', blocks 1 - 41) - these 950 Block Groups were omitted from the analysis.
 ```{r metrics}
-fcc_tract %>% dt_mutate(availability_cons = consumer_has/num_ppl) %>% dt_mutate(availability_bus = business_has/num_ppl) # 222537
-fcc_tract_final <- fcc_tract[!is.na(fcc_tract$availability_cons) & !is.na(fcc_tract$availability_bus),] # 221587
+fcc_bg %>% dt_mutate(availability_cons = consumer_has/num_ppl) %>% dt_mutate(availability_bus = business_has/num_ppl) # 222537
+fcc_bg_final <- fcc_bg[!is.na(fcc_bg$availability_cons) & !is.na(fcc_bg$availability_bus),] # 221587
 ```
 
 ## Parse GEOID into State, County, Tract
 ```{r parse GEOID}
-fcc_tract_final$state <- usmap::fips(fcc_tract_final$stateabbr)
-fcc_tract_final$county <- substr(fcc_tract_final$tract, 3,5)
+fcc_bg_final$state <- usmap::fips(fcc_bg_final$stateabbr)
+fcc_bg_final$county <- substr(fcc_bg_final$geoid_12, 3,5)
+fcc_bg_final$tract <- substr(fcc_bg_final$geoid_12, 6,11)
+fcc_bg_final$block_group <- substr(fcc_bg_final$geoid_12, 12,12)
 ```
 
 ## Bring In Subscription Data
@@ -106,7 +119,9 @@ connections %>% dt_mutate(pcat_all_pct_min = case_when(pcat_all == 0 ~ 0,
                                                        pcat_10x1 == 5 ~ 1))
 
 # merge on tract level with fcc_bg_final - first create geoid-10 (state thru tract code)
-fcc_full <- merge(fcc_tract_final, connections, by.x = 'tract', by.y = 'tractcode', all.x = TRUE) #221587
+fcc_bg_final$tract_full <- substr(fcc_bg_final$geoid_12, 1, 11)
+
+fcc_full <- merge(fcc_bg_final, connections, by.x = 'tract_full', by.y = 'tractcode', all.x = TRUE) #221587
 
 ```
 
@@ -114,13 +129,10 @@ fcc_full <- merge(fcc_tract_final, connections, by.x = 'tract', by.y = 'tractcod
 ```{r rural/urban}
 r_u <- fread('~/dspg19broadband/data/working/ruralurban2013.csv', colClasses = 'character')
 fcc_full$county_full <- substr(fcc_full$geoid_12, 1,5)
-
 fcc_final  <- merge(fcc_full, r_u, by.x = 'county_full', by.y = 'FIPS', all.x = TRUE, all.y = FALSE)
 ```
 
 ## Write it out
 ```{r write out}
-write.csv(fcc_final, '~/dspg19broadband/data/working/fcc_processed.csv')
+write.csv(fcc_final, '~/dspg19broadband/data/working/fcc_processed_25.csv')
 ```
-
-

@@ -17,32 +17,20 @@ Type: CSV
 
 
 
-```{r load packages}
-for (pkg in c("httr", "here", "maptools","gpclib","sp", 'sf', 'ggplot2', 'ggmap', 'osmdata', 'tidyverse', 'tigris', 'acs', "RSocrata")) {
+```{r fcc 477, message=FALSE}
+for (pkg in c("httr", "here", "maptools","gpclib","sp", 'sf', 'ggplot2', 'ggmap', 'osmdata', 'tidyverse', 'tigris', 'acs')) {
   library(pkg, character.only = TRUE)
 }
-```
 
-```{r fcc 477, message=FALSE}
-
-
-fcc_477 <- function(state) {
-  destfile <- here("data", "original", "FCC",sprintf('fcc_477_%s.csv', state))
+fcc_477 <- function() {
+  destfile <- here("data", "original", "FCC","fcc_477.csv")
   if (!file.exists(destfile)) {
-    df <- read.socrata(
-  sprintf("https://opendata.fcc.gov/resource/ei6b-6aiz.csv?stateabbr=%s",state),
-  app_token = Sys.getenv("fcc_app_token"),
-  email     = "ksvchn@gmail.com",
-  password  = Sys.getenv("fcc_api_pwd")
-)
-  write.csv(df,  destfile)
+    download.file(url = "https://opendata.fcc.gov/resource/ei6b-6aiz.csv",
+                  destfile = destfile)
   }
 }
 
-# get data files for each state
-for (state in state.abb) {
-  fcc_477(state)
-}
+fcc_477()
 
 
 ```
@@ -84,45 +72,12 @@ state_blocks <- function(fips) {
 
 }
 
+
 # get block groups for VA
+state_blocks(51)
 
-#state_blocks(51)
 
 ```
 
 
-# state_blocks(51)
-
-```
-
-```{r previous years - fcc}
-## Tried and failed - historic files have weird permissions and need to be transported via SFTP. Reference XWiki /Analysis page on FCC data for more information.
-
-links <- c('http://transition.fcc.gov/form477/BroadbandData/Fixed/Dec16/Version%202/US-Fixed-without-satellite-Dec2016.zip','http://transition.fcc.gov/form477/BroadbandData/Fixed/Dec15/Version%204/US-Fixed-without-Satellite-Dec2015.zip','http://transition.fcc.gov/form477/BroadbandData/Fixed/Dec14/Version%203/US-Fixed-without-Satellite-Dec2014.zip')
-
-links2 <- c('http://transition.fcc.gov/form477/BroadbandData/Fixed/Jun16/Version%202/US-Fixed-without-Satellite-Jun2016.zip',
-                'http://transition.fcc.gov/form477/BroadbandData/Fixed/Dec15/Version%204/US-Fixed-without-Satellite-Dec2015.zip',
-                'http://transition.fcc.gov/form477/BroadbandData/Fixed/Dec14/Version2/US-Fixed-without-Satellite-Dec2014.zip')
-
-years <- c(2016, 2015, 2014)
-
-df <- as.data.frame(cbind(years, links, links2))
-
-fcc_history <- function(year){
-  destzip <- here("data", "original", "FCC", "FCC_Historic",  sprintf('%s_fcc.zip', year))
-  destfolder<- here("data", "original", "FCC", "FCC_Historic", sprintf('%s_fcc', year))
-  if (!file.exists(destzip)) {
-    download.file(url = as.character(df$links2[df$year == year]),
-                  destfile = destzip)
-  }
-  zip::unzip(destzip, exdir = destfolder)
-}
-
-# fcc_history(2015) 
-# <- Warning message:
-#In unzip(destzip, exdir = destfile) : zip file is corrupt
-
-# fcc_history(2015)
-
-```
 
