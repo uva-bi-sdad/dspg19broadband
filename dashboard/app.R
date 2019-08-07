@@ -156,12 +156,13 @@ make_state_map <- function(state, geography, r_u){
           round(data$availability_cons*100,1),"%",
           "<br />",
           "<strong>Percentile Discrepancy: </strong>",
-          round(data$availability_cons*100 - data$B28002_007_per,1),"%"
+          abs(round(data$availability_cons*100 - data$B28002_007_per,1)),"%"
     ),
     htmltools::HTML
   )
   qpal <- colorQuantile("YlOrRd", abs(round(data$availability_cons*100 - data$B28002_007_per,1)), n = 5)
   m = leaflet(data = data)
+  
   m <- addPolygons(m,
                    stroke = TRUE,
                    weight = .8,
@@ -170,8 +171,7 @@ make_state_map <- function(state, geography, r_u){
                    label = labels,
                    highlight = highlightOptions(
                      weight = 5,
-                     color = "black",
-                     bringToFront = TRUE),
+                     color = "black"),
                   
                    labelOptions = labelOptions(direction = "bottom",
                                                style = list(
@@ -209,7 +209,8 @@ make_state_map <- function(state, geography, r_u){
     htmltools::HTML
   )
   
-  qpal_cities <- colorNumeric("Blues", q$RUCC_2013,reverse = TRUE)
+  pal <-  c('#9999ff', '#4c4cff', '#1300ff','#0d00cc', '#070099', '#05007f', '#030065', '#02004b', '#010032')
+  qpal_cities <- colorNumeric(pal, q$RUCC_2013)
   
   m <- addCircles(m,lng = q$long, lat = q$lat, label = label_cities, 
                   radius = ~sqrt((as.numeric(q$Population_2010))) * 100,
@@ -221,6 +222,9 @@ make_state_map <- function(state, geography, r_u){
               
   } else if (geography  == 'Census Tract') {
     data <- acs_fcc_shapes(state, geography, r_u) %>% st_transform(4326)
+    dat <- here('data', 'working', 'merged_by_rural_urban.csv')
+    q <- read.csv(dat) %>% data.table() %>% dt_mutate(rural_urban = ifelse(RUCC_2013 < 4, 'Urban','Rural')) %>% 
+      dt_filter(as.character(stateid) == unique(data$state)) %>% dt_filter(rural_urban %in% unique(data$rural_urban))
 
     labels <- lapply(
       paste("<strong>County:</strong>",
@@ -257,11 +261,11 @@ make_state_map <- function(state, geography, r_u){
             round(data$availability_adv*100,1),"%",
             "<br />",
             "<strong>Percentile Discrepancy: </strong>",
-            round(data$availability_adv*100 - data$B28002_007_per,1),"%"
+            abs(round(data$availability_adv*100 - data$B28002_007_per,1)),"%"
       ),
       htmltools::HTML
     )
-    qpal <- colorQuantile("YlOrRd", abs(round(data$availability_cont*100 - data$B28002_007_per,1)), n = 5)
+    qpal <- colorQuantile("YlOrRd", abs(round(data$availability_adv*100 - data$B28002_007_per,1)), n = 5)
     m = leaflet(data = data)
     m <- addPolygons(m,
                      stroke = TRUE,
@@ -271,8 +275,7 @@ make_state_map <- function(state, geography, r_u){
                      label = labels,
                      highlight = highlightOptions(
                        weight = 5,
-                       color = "black",
-                       bringToFront = TRUE),
+                       color = "black"),
                      
                      labelOptions = labelOptions(direction = "bottom",
                                                  style = list(
@@ -281,22 +284,53 @@ make_state_map <- function(state, geography, r_u){
                                                    direction = "auto",
                                                    offset = c(1, 5)
                                                  )),
-                     fillColor = ~qpal(abs(round(data$availability_cont*100 - data$B28002_007_per,1))),
+                     fillColor = ~qpal(abs(round(data$availability_adv*100 - data$B28002_007_per,1))),
                      fillOpacity = 0.7
     )
     
-    m
     
-
-    fillColor = ~qpal(round(data$availability_cont*100 - data$B28002_004_per,1))
-    fillOpacity = 0.7
     m <- addLegend(m,
-                  position = "bottomleft", pal = qpal, values = ~(abs(round(availability_cont*100 - B28002_007_per,1))),
+                  position = "bottomleft", pal = qpal, values = ~(abs(round(availability_adv*100 - B28002_007_per,1))),
                   title = "Percentile Difference: FCC v ACS",
                   opacity = 1)
-    m
+    label_cities <- lapply(
+      paste("<strong>City: </strong>",
+            as.character(q$city),
+            "<br />",
+            "<strong>Coverage: </strong>",
+            q$coverage,"%",
+            "<br />",
+            "<strong>County: </strong>",
+            q$county,
+            "<br />",
+            "<strong>State: </strong>",
+            q$stateid,
+            "<br />",
+            "<strong>Population (2010): </strong>",
+            q$Population_2010,
+            "<br />",
+            "<strong>RUCC: </strong>",
+            q$RUCC_2013,
+            "<br />"
+      ),
+      htmltools::HTML
+    )
+    
+    pal <-  c('#9999ff', '#4c4cff', '#1300ff','#0d00cc', '#070099', '#05007f', '#030065', '#02004b', '#010032')
+    qpal_cities <- colorNumeric(pal, q$RUCC_2013)
+    
+    m <- addCircles(m,lng = q$long, lat = q$lat, label = label_cities, 
+                    radius = ~sqrt((as.numeric(q$Population_2010))) * 100,
+                    fillOpacity = .4,
+                    opacity = 1,
+                    weight = 1, 
+                    color  =  ~qpal_cities(q$RUCC_2013))
+    
   } else if (geography  == 'County') {
     data <- county_shapes(state, r_u) %>% st_transform(4326)
+    dat <- here('data', 'working', 'merged_by_rural_urban.csv')
+    q <- read.csv(dat) %>% data.table() %>% dt_mutate(rural_urban = ifelse(RUCC_2013 < 4, 'Urban','Rural')) %>% 
+      dt_filter(as.character(stateid) == unique(data$state)) %>% dt_filter(rural_urban %in% unique(data$rural_urban))
     labels <- lapply(
       paste("<strong>County:</strong>",
             data$COUNTY.NAME,
@@ -326,7 +360,7 @@ make_state_map <- function(state, geography, r_u){
             round(data$availability_adv*100,1),"%",
             "<br />",
             "<strong>Percentile Discrepancy: </strong>", 
-            round(data$availability_adv*100 - data$BROADBAND.USAGE*100,1),"%"
+            abs(round(data$availability_adv*100 - data$BROADBAND.USAGE*100,1)),"%"
       ),
       htmltools::HTML
     )
@@ -340,8 +374,7 @@ make_state_map <- function(state, geography, r_u){
                      label = labels,
                      highlight = highlightOptions(
                        weight = 5,
-                       color = "black",
-                       bringToFront = TRUE),
+                       color = "black"),
                      
                      labelOptions = labelOptions(direction = "bottom",
                                                  style = list(
@@ -360,13 +393,42 @@ make_state_map <- function(state, geography, r_u){
                                   "border-color" = "rgba(0,0,0,0.5)",
                                   direction = "auto"
                                 ))
-    fillColor = ~qpal(round(data$availability_adv*100 - data$BROADBAND.USAGE*100,1))
-    fillOpacity = 0.7
     m <- addLegend(m,
                    position = "bottomleft", pal = qpal, values = ~(abs(round(availability_adv*100 - BROADBAND.USAGE*100,1))),
                    title = "Percentile Difference: FCC v Microsoft",
                    opacity = 1)
-    m
+    label_cities <- lapply(
+      paste("<strong>City: </strong>",
+            as.character(q$city),
+            "<br />",
+            "<strong>Coverage: </strong>",
+            q$coverage,"%",
+            "<br />",
+            "<strong>County: </strong>",
+            q$county,
+            "<br />",
+            "<strong>State: </strong>",
+            q$stateid,
+            "<br />",
+            "<strong>Population (2010): </strong>",
+            q$Population_2010,
+            "<br />",
+            "<strong>RUCC: </strong>",
+            q$RUCC_2013,
+            "<br />"
+      ),
+      htmltools::HTML
+    )
+    
+    pal <-  c('#9999ff', '#4c4cff', '#1300ff','#0d00cc', '#070099', '#05007f', '#030065', '#02004b', '#010032')
+    qpal_cities <- colorNumeric(pal, q$RUCC_2013)
+    
+    m <- addCircles(m,lng = q$long, lat = q$lat, label = label_cities, 
+                    radius = ~sqrt((as.numeric(q$Population_2010))) * 100,
+                    fillOpacity = .4,
+                    opacity = 1,
+                    weight = 1, 
+                    color  =  ~qpal_cities(q$RUCC_2013))
   }
 }
 
@@ -455,8 +517,8 @@ ui <- fluidPage(
   theme = "bootstrap.css",
   title = "Broadband DSPG 2019",
   
-  fluidRow(width = 4, column(2.5,
-                  img(src = 'ers_logo.png', class = 'topimage')
+  fluidRow(width = 5, column(2.5,
+                  img(src = png('logo.eps', height = 300, width  = 800), class = 'topimage')
                   ),
            column(7, 
            h1('Broadband Coverage Discrepancy Map'))
