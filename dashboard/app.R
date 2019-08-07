@@ -364,7 +364,10 @@ make_state_map <- function(state, geography, r_u){
       ),
       htmltools::HTML
     )
-    qpal <- colorQuantile("YlOrRd", abs(round(data$availability_adv*100 - data$BROADBAND.USAGE*100,1)), n = 5)
+    #binpal <- colorBin("Blues", countries$gdp_md_est, 6, pretty = FALSE)
+    bins <- c(0,20,40,60,80,100)
+    binpal<- colorBin("YlOrRd", abs(round(data$availability_adv*100 - data$BROADBAND.USAGE*100,1)),bins = bins,pretty = FALSE)
+    #qpal <- colorQuantile("YlOrRd", abs(round(data$availability_adv*100 - data$BROADBAND.USAGE*100,1)), n = 5)
     m = leaflet(data = data)
     m <- addPolygons(m,
                      stroke = TRUE,
@@ -383,7 +386,7 @@ make_state_map <- function(state, geography, r_u){
                                                    direction = "auto",
                                                    offset = c(1, 5)
                                                  )),
-                     fillColor = ~qpal(abs(round(data$availability_adv*100 - data$BROADBAND.USAGE*100,1))),
+                     fillColor = ~binpal(abs(round(data$availability_adv*100 - data$BROADBAND.USAGE*100,1))),
                      fillOpacity = 0.7
     ) 
     
@@ -393,10 +396,16 @@ make_state_map <- function(state, geography, r_u){
                                   "border-color" = "rgba(0,0,0,0.5)",
                                   direction = "auto"
                                 ))
+    
+    cl <- c("#FFFFB2","#FECC5C","#FD8D3C","#F03B20","#BD0026")
+                
+    leg <- c("0%-20%","20%-40%","40%-60%","60%-80%","80%-100%")
+    
     m <- addLegend(m,
-                   position = "bottomleft", pal = qpal, values = ~(abs(round(availability_adv*100 - BROADBAND.USAGE*100,1))),
-                   title = "Percentile Difference: FCC v Microsoft",
-                   opacity = 1)
+                   position = "bottomleft", colors = cl, values = ~(abs(round(availability_adv*100 - BROADBAND.USAGE*100,1))),
+                   title = "Percentile Difference: FCC vs Microsoft",
+                   opacity = 0.7, labels = leg)
+    
     label_cities <- lapply(
       paste("<strong>City: </strong>",
             as.character(q$city),
