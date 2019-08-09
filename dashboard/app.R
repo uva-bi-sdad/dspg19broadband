@@ -527,7 +527,7 @@ ui <- fluidPage(
   title = "Broadband DSPG 2019",
   
   fluidRow(width = 5, column(2.5,
-                  img(src = png('logo.eps', height = 300, width  = 800), class = 'topimage')
+                  img(src = 'logo.png', class = 'topimage')
                   ),
            column(7, 
            h1('Broadband Coverage Discrepancy Map'))
