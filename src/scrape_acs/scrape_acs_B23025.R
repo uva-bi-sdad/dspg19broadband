@@ -55,5 +55,4 @@ for(i in ind_failed){
 }
 
 employment <- rbindlist(employment_list)
-
-# write.csv(employment,"data/original/acs5yr/acsB23025.csv")
+write.csv(employment,"data/original/acs5yr/acsB23025.csv")
