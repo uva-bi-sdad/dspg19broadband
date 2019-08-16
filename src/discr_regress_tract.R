@@ -184,3 +184,47 @@ autoplot(reg_fccms2nonm)
 autoplot(reg_fccms2m)
 
 
+#
+# Comparison -----------------------------------------------------------------------------------------------
+#
+
+
+# FCC-ACS vs FCC-MS
+stargazer(reg_fccacs2all, reg_fccms2all, reg_fccacs2nonm, reg_fccms2nonm, reg_fccacs2m, reg_fccms2m, no.space = TRUE, digits = 2, type = "text",
+          column.labels = c("All counties", " Nonmetro counties", "Metro counties"), column.separate = c(2, 2, 2))
+
+
+#
+# Try out caret -----------------------------------------------------------------------------------------------
+#
+
+library(caret)
+
+discr <- discr %>% filter(!is.na(dis_abs_fcc_acs))
+
+# create training set indices with 80% of data
+set.seed(20190711)  # For reproducibility
+# Create index for testing and training data
+indices_train <- createDataPartition(y = discr$dis_abs_fcc_acs, p = 0.8, list = FALSE)
+
+# preprocess
+# subset iris data to training
+training <- discr[indices_train, ]
+# subset the rest to test
+testing <- discr[-indices_train, ]
+
+# define crossvalidation
+control <- trainControl(method = "cv", number = 5)
+metric <- "Accuracy"
+
+# GLM
+fit.glm <- train(dis_abs_fcc_acs ~ ru_binary + unempl + his_lat + minority_per + under_1 + no_hs, data=training,
+                         method = "glm", metric = metric, trControl = control)
+# Random forest
+fit.rf <- train(dis_abs_fcc_acs ~ ru_binary + unempl + his_lat + minority_per + under_1 + no_hs, data=training,
+                        method = "rf", metric = metric, trControl = control)
+
+# SVM
+fit.svm <- train(dis_abs_fcc_acs ~ ru_binary + unempl + his_lat + minority_per + under_1 + no_hs, data=training,
+                 method = "svmLinear", metric = metric, trControl = control)
+
