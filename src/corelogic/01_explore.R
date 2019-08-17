@@ -68,6 +68,10 @@ plot(st_geometry(fcc_cl))
 # Regress -----------------------------------------------------------------------------
 #
 
+# Convert availability proportion to percentages to faciliate interpretation
+fcc_cl$availability_adv <- fcc_cl$availability_adv*100
+
+# Regress
 reg_va1 <- lm(median_sale_amount ~ RUCC_2013,
                      data = fcc_cl)
 reg_va2 <- lm(median_sale_amount ~ availability_adv,
