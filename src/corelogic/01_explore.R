@@ -15,8 +15,8 @@ con <- dbConnect(drv = RPostgreSQL::PostgreSQL(),
                        dbname = "corelogic",
                        host = "localhost",
                        port = "5436",
-                       user = Sys.getenv("userid"),
-                       password = Sys.getenv("pwd"))
+                       user = Sys.getenv("db_userid"),
+                       password = Sys.getenv("db_pwd"))
 
 
 #
