@@ -6,6 +6,7 @@ library(data.table)
 library(dplyr)
 library(stargazer)
 library(stringr)
+library(ggfortify)
 
 
 #
@@ -104,6 +105,7 @@ fcc_cl_acs$black <- fcc_cl_acs$black * 100
 fcc_cl_acs$family <- fcc_cl_acs$family * 100
 fcc_cl_acs$foreign <- fcc_cl_acs$foreign * 100
 
+
 #
 # Regress -----------------------------------------------------------------------------
 #
@@ -111,37 +113,46 @@ fcc_cl_acs$foreign <- fcc_cl_acs$foreign * 100
 fcc_cl_acs$log_mediansale <- log(fcc_cl_acs$median_sale_amount)
 
 # All tracts
-reg_va1 <- lm(log_mediansale ~ ru_binary,
+reg_va1all <- lm(log_mediansale ~ ru_binary,
                      data = fcc_cl_acs)
-reg_va2 <- lm(log_mediansale ~ availability_adv,
+reg_va2all <- lm(log_mediansale ~ availability_adv,
                      data = fcc_cl_acs)
-reg_va3 <- lm(log_mediansale ~ ru_binary + availability_adv,
+reg_va3all <- lm(log_mediansale ~ ru_binary + availability_adv,
               data = fcc_cl_acs)
-reg_va4 <- lm(log_mediansale ~ ru_binary + availability_adv + hs_or_less + poverty + age_65_older + hispanic + black + density + family + foreign,
+reg_va4all <- lm(log_mediansale ~ ru_binary + availability_adv + hs_or_less + poverty + age_65_older + hispanic + black + density + family + foreign,
               data = fcc_cl_acs)
-stargazer(reg_va1, reg_va2, reg_va3, reg_va4, no.space = TRUE, digits = 2, type = "text", star.cutoffs = c(0.05, 0.01, 0.001))
+stargazer(reg_va1all, reg_va2all, reg_va3all, reg_va4all, no.space = TRUE, digits = 2, type = "text", star.cutoffs = c(0.05, 0.01, 0.001))
 
 # Tracts in metro counties
-reg_va1 <- lm(log_mediansale ~ RUCC_2013,
+reg_va1m <- lm(log_mediansale ~ RUCC_2013,
               data = fcc_cl_acs[fcc_cl_acs$ru_binary == "metro", ])
-reg_va2 <- lm(log_mediansale ~ availability_adv,
+reg_va2m <- lm(log_mediansale ~ availability_adv,
               data = fcc_cl_acs[fcc_cl_acs$ru_binary == "metro", ])
-reg_va3 <- lm(log_mediansale ~ RUCC_2013 + availability_adv,
+reg_va3m <- lm(log_mediansale ~ RUCC_2013 + availability_adv,
               data = fcc_cl_acs[fcc_cl_acs$ru_binary == "metro", ])
-reg_va4 <- lm(log_mediansale ~ RUCC_2013 + availability_adv + hs_or_less + poverty + age_65_older + hispanic + black + density + family + foreign,
+reg_va4m <- lm(log_mediansale ~ RUCC_2013 + availability_adv + hs_or_less + poverty + age_65_older + hispanic + black + density + family + foreign,
               data = fcc_cl_acs[fcc_cl_acs$ru_binary == "metro", ])
-stargazer(reg_va1, reg_va2, reg_va3, reg_va4, no.space = TRUE, digits = 2, type = "text", star.cutoffs = c(0.05, 0.01, 0.001))
+stargazer(reg_va1m, reg_va2m, reg_va3m, reg_va4m, no.space = TRUE, digits = 2, type = "text", star.cutoffs = c(0.05, 0.01, 0.001))
 
 # Tracts in nonmetro counties
-reg_va1 <- lm(log_mediansale ~ RUCC_2013,
+reg_va1n <- lm(log_mediansale ~ RUCC_2013,
               data = fcc_cl_acs[fcc_cl_acs$ru_binary == "nonmetro", ])
-reg_va2 <- lm(log_mediansale ~ availability_adv,
+reg_va2n <- lm(log_mediansale ~ availability_adv,
               data = fcc_cl_acs[fcc_cl_acs$ru_binary == "nonmetro", ])
-reg_va3 <- lm(log_mediansale ~ RUCC_2013 + availability_adv,
+reg_va3n <- lm(log_mediansale ~ RUCC_2013 + availability_adv,
               data = fcc_cl_acs[fcc_cl_acs$ru_binary == "nonmetro", ])
-reg_va4 <- lm(log_mediansale ~ RUCC_2013 + availability_adv + hs_or_less + poverty + age_65_older + hispanic + black + density + family + foreign,
+reg_va4n <- lm(log_mediansale ~ RUCC_2013 + availability_adv + hs_or_less + poverty + age_65_older + hispanic + black + density + family + foreign,
               data = fcc_cl_acs[fcc_cl_acs$ru_binary == "nonmetro", ])
-stargazer(reg_va1, reg_va2, reg_va3, reg_va4, no.space = TRUE, digits = 2, type = "text", star.cutoffs = c(0.05, 0.01, 0.001))
+stargazer(reg_va1n, reg_va2n, reg_va3n, reg_va4n, no.space = TRUE, digits = 2, type = "text", star.cutoffs = c(0.05, 0.01, 0.001))
+
+
+#
+# Diagnostics -----------------------------------------------------------------------------
+#
+
+autoplot(reg_va4all)
+autoplot(reg_va4m)
+autoplot(reg_va4n)
 
 
 #
