@@ -4,9 +4,11 @@ library(sf)
 library(here)
 library(data.table)
 library(dplyr)
-library(stargazer)
-library(stringr)
-library(ggfortify)
+library(naniar)
+library(dbplyr)
+library(ggplot2)
+library(maps)
+library(ggthemes)
 
 
 #
@@ -14,11 +16,11 @@ library(ggfortify)
 #
 
 con <- dbConnect(drv = RPostgreSQL::PostgreSQL(),
-                       dbname = "corelogic",
-                       host = "localhost",
-                       port = "5436",
-                       user = Sys.getenv("db_userid"),
-                       password = Sys.getenv("db_pwd"))
+                 dbname = "corelogic",
+                 host = "localhost",
+                 port = "5436",
+                 user = Sys.getenv("db_userid"),
+                 password = Sys.getenv("db_pwd"))
 
 
 #
@@ -37,139 +39,61 @@ colnames(deed14va)
 deed14vasale <- st_read(con, query = "SELECT * FROM usda_deed_2014_51_median_sales_tract LIMIT 1")
 colnames(deed14vasale)
 
-clva <- st_read(con, query = "SELECT * FROM usda_deed_2014_51_median_sales_tract")
 
-
-# Get tract FCC data and ACS data and filter to VA -------------------------------------------------------------------
+#
+# Get some VA data --------------------------------------------------------------------------------
 #
 
-# Get FCC file
-fcc_file <- here("data", "working", "fcc_processed_tract_25.csv")
-fcc <- fread(fcc_file, colClasses = c(state = "character", county = "character", tract = "character")) 
+# Median sales per tract in Virginia (includes all 1900 tracts with those with no properties to calculate set to NA)
+deed14vasale <- st_read(con, query = "SELECT * FROM usda_deed_2014_51_median_sales_tract")
+colnames(deed14vasale)
 
-fccva <- fcc %>% filter(State == "VA")
-
-# Get ACS 2012-14 file
-acs_file <- here("data", "working", "acs_2012-16", "acs_2012-16_calc.csv")
-acs <- fread(acs_file) 
-
-acsva <- acs %>% filter(str_detect(NAME, ", Virginia")) # Virginia has 1,907 census tracts - correct
+# Data for Virginia with tract info and geometry (does not include 43 tracts that had no properties with lat/lon)
+deed14va <- st_read(con, query = "SELECT \"tract_fips\", \"corporate.indicator\", \"absentee.owner.status\", \"situs.city\", \"situs.state\", \"multi.apn\", 
+                   \"sale.code\", \"sale.amount\", \"transaction.type\", \"mortgage.amount\", \"mortgage.interest.rate\", \"mortgage.loan.type.code\",
+                   \"mortgage.deed.type\", \"mortgage.term.code\", \"mortgage.term\", \"ownership.transfer.percentage\", \"land.use\", \"inter.family\", 
+                   \"mortgage.interest.rate.type\", \"resale.new.construction\", \"foreclosure\", \"geometry\" FROM \"usda_deed_2014_51_tract\"")
+colnames(deed14va)
 
 
 #
-# Link tract level FCC VA, CL VA, ACS VA ------------------------------------------------------------------------
+# Missingness --------------------------------------------------------------------------------
 #
 
-# FCC and CL
-head(fccva)
-head(clva)
+gg_miss_var(deed14vasale)
 
-sum(fcc$tract %in% clva$GEOID)
-sum(clva$GEOID %in% fcc$tract)
+gg_miss_var(deed14va)
 
-fcc_cl <- merge(fccva, clva, by.x = "tract", by.y = "GEOID")
-
-fcc_cl <- st_as_sf(fcc_cl)
-plot(st_geometry(fcc_cl))
-
-#FCC-CL and ACS
-head(fcc_cl)
-head(acsva)
-
-fcc_cl$tract <- as.numeric(fcc_cl$tract)
-acsva$GEOID <- as.numeric(acsva$GEOID)
-
-sum(fcc_cl$tract %in% acsva$GEOID)
-sum(acsva$GEOID %in% fcc_cl$tract)
-
-fcc_cl_acs <- merge(fcc_cl, acsva, by.x = "tract", by.y = "GEOID")
+table(deed14va$ownership.transfer.percentage)
+table(deed14va$absentee.owner.status)
+hist(deed14va$sale.amount)
+table(deed14va$sale.code)
+table(deed14va$transaction.type)
+table(deed14va$mortgage.term.code)
+table(deed14va$multi.apn)
+table(deed14va$resale.new.construction)
+table(deed14va$inter.family)
+table(deed14va$land.use)
+table(deed14va$mortgage.interest.rate.type)
+table(deed14va$foreclosure)
+hist(deed14va$mortgage.amount)
+table(deed14va$corporate.indicator)
 
 
 #
-# Clean up some variables -----------------------------------------------------------------------------
+# Median sales data plot --------------------------------------------------------------------------------
 #
 
-# Convert availability proportion to percentages to faciliate interpretation
-fcc_cl_acs$availability_adv <- fcc_cl_acs$availability_adv*100
+summary(deed14vasale$median_sale_amount)
+boxplot(deed14vasale$median_sale_amount)
 
-# Dichotomize urban/rural
-fcc_cl_acs$RUCC_2013 <- as.numeric(fcc_cl_acs$RUCC_2013)
-fcc_cl_acs$ru_binary <- ifelse(fcc_cl_acs$RUCC_2013 > 3, "nonmetro", "metro")
-
-# Convert all else to % to facilitate interpretation
-fcc_cl_acs$hs_or_less <- fcc_cl_acs$hs_or_less * 100
-fcc_cl_acs$poverty <- fcc_cl_acs$poverty * 100
-fcc_cl_acs$age_65_older <- fcc_cl_acs$age_65_older * 100
-fcc_cl_acs$hispanic <- fcc_cl_acs$hispanic * 100
-fcc_cl_acs$black <- fcc_cl_acs$black * 100
-fcc_cl_acs$family <- fcc_cl_acs$family * 100
-fcc_cl_acs$foreign <- fcc_cl_acs$foreign * 100
-
-
-#
-# Regress -----------------------------------------------------------------------------
-#
-
-fcc_cl_acs$log_mediansale <- log(fcc_cl_acs$median_sale_amount)
-
-# All tracts
-reg_va1all <- lm(log_mediansale ~ ru_binary,
-                     data = fcc_cl_acs)
-reg_va2all <- lm(log_mediansale ~ availability_adv,
-                     data = fcc_cl_acs)
-reg_va3all <- lm(log_mediansale ~ ru_binary + availability_adv,
-              data = fcc_cl_acs)
-reg_va4all <- lm(log_mediansale ~ ru_binary + availability_adv + hs_or_less + poverty + age_65_older + hispanic + black + density + family + foreign,
-              data = fcc_cl_acs)
-stargazer(reg_va1all, reg_va2all, reg_va3all, reg_va4all, no.space = TRUE, digits = 2, type = "text", star.cutoffs = c(0.05, 0.01, 0.001))
-
-# Tracts in metro counties
-reg_va1m <- lm(log_mediansale ~ RUCC_2013,
-              data = fcc_cl_acs[fcc_cl_acs$ru_binary == "metro", ])
-reg_va2m <- lm(log_mediansale ~ availability_adv,
-              data = fcc_cl_acs[fcc_cl_acs$ru_binary == "metro", ])
-reg_va3m <- lm(log_mediansale ~ RUCC_2013 + availability_adv,
-              data = fcc_cl_acs[fcc_cl_acs$ru_binary == "metro", ])
-reg_va4m <- lm(log_mediansale ~ RUCC_2013 + availability_adv + hs_or_less + poverty + age_65_older + hispanic + black + density + family + foreign,
-              data = fcc_cl_acs[fcc_cl_acs$ru_binary == "metro", ])
-stargazer(reg_va1m, reg_va2m, reg_va3m, reg_va4m, no.space = TRUE, digits = 2, type = "text", star.cutoffs = c(0.05, 0.01, 0.001))
-
-# Tracts in nonmetro counties
-reg_va1n <- lm(log_mediansale ~ RUCC_2013,
-              data = fcc_cl_acs[fcc_cl_acs$ru_binary == "nonmetro", ])
-reg_va2n <- lm(log_mediansale ~ availability_adv,
-              data = fcc_cl_acs[fcc_cl_acs$ru_binary == "nonmetro", ])
-reg_va3n <- lm(log_mediansale ~ RUCC_2013 + availability_adv,
-              data = fcc_cl_acs[fcc_cl_acs$ru_binary == "nonmetro", ])
-reg_va4n <- lm(log_mediansale ~ RUCC_2013 + availability_adv + hs_or_less + poverty + age_65_older + hispanic + black + density + family + foreign,
-              data = fcc_cl_acs[fcc_cl_acs$ru_binary == "nonmetro", ])
-stargazer(reg_va1n, reg_va2n, reg_va3n, reg_va4n, no.space = TRUE, digits = 2, type = "text", star.cutoffs = c(0.05, 0.01, 0.001))
-
-
-#
-# Diagnostics -----------------------------------------------------------------------------
-#
-
-# All
-autoplot(reg_va4all)
-# Residuals vs. fitted: A horizontal line with no pattern indicates a linear reationship. --> Pretty good.
-# Normal Q-Q: Residual points following the dashed line indicate normal residual distribution. --> Fail at extremes.
-# Scale-Location: Horizontal line with equal point spread indicates homoskedasticity. --> Pretty good.
-# Residuals vs leverage: Ok?
-
-# Metro
-autoplot(reg_va4m)
-# Residuals vs. fitted: A horizontal line with no pattern indicates a linear reationship. --> Pretty good!
-# Normal Q-Q: Residual points following the dashed line indicate normal residual distribution. --> Fail at extremes.
-# Scale-Location: Horizontal line with equal point spread indicates homoskedasticity. -->  Pretty good.
-# Residuals vs leverage: Ok?
-
-# Nonmetro
-autoplot(reg_va4n)
-# Residuals vs. fitted: A horizontal line with no pattern indicates a linear reationship. --> Pretty good.
-# Normal Q-Q: Residual points following the dashed line indicate normal residual distribution. --> Fail at extremes.
-# Scale-Location: Horizontal line with equal point spread indicates homoskedasticity. --> Sort of good?
-# Residuals vs leverage: Hmm.
+deed14vasale$medsale_quant <- deed14vasale$median_sale_amount
+deed14vasale$medsale_quant <- cut(deed14vasale$medsale_quant, quantile(deed14vasale$medsale_quant, seq(0, 1, 0.10), na.rm = TRUE), include.lowest = TRUE)
+                                           
+ggplot(deed14vasale, aes(fill = medsale_quant)) +
+  geom_sf() +
+  labs(title = "Median property sale amount quantiles in Virginia by tract", caption = "Source: CoreLogic 2014.") +
+  ggthemes::theme_map()
 
 
 #
