@@ -5,6 +5,7 @@ library(here)
 library(data.table)
 library(dplyr)
 library(stargazer)
+library(stringr)
 
 
 #
@@ -39,19 +40,27 @@ clva <- st_read(con, query = "SELECT * FROM usda_deed_2014_51_median_sales_tract
 
 
 #
-# Get tract FCC data --------------------------------------------------------------------------------
+# Get tract FCC data and ACS data and filter to VA -------------------------------------------------------------------
 #
 
+# Get FCC file
 fcc_file <- here("data", "working", "fcc_processed_tract_25.csv")
 fcc <- fread(fcc_file, colClasses = c(state = "character", county = "character", tract = "character")) 
 
 fccva <- fcc %>% filter(State == "VA")
 
+# Get ACS 2012-14 file
+acs_file <- here("data", "working", "acs_2012-16", "acs_2012-16_calc.csv")
+acs <- fread(acs_file) 
+
+acsva <- acs %>% filter(str_detect(NAME, ", Virginia")) # Virginia has 1,907 census tracts - correct
+
 
 #
-# Link tract level FCC VA and CL VA ------------------------------------------------------------------------
+# Link tract level FCC VA, CL VA, ACS VA ------------------------------------------------------------------------
 #
 
+# FCC and CL
 head(fccva)
 head(clva)
 
@@ -63,22 +72,36 @@ fcc_cl <- merge(fccva, clva, by.x = "tract", by.y = "GEOID")
 fcc_cl <- st_as_sf(fcc_cl)
 plot(st_geometry(fcc_cl))
 
+#FCC-CL and ACS
+head(fcc_cl)
+head(acsva)
+
+fcc_cl$tract <- as.numeric(fcc_cl$tract)
+acsva$GEOID <- as.numeric(acsva$GEOID)
+
+sum(fcc_cl$tract %in% acsva$GEOID)
+sum(acsva$GEOID %in% fcc_cl$tract)
+
+fcc_cl_acs <- merge(fcc_cl, acsva, by.x = "tract", by.y = "GEOID")
+
 
 #
 # Regress -----------------------------------------------------------------------------
 #
 
 # Convert availability proportion to percentages to faciliate interpretation
-fcc_cl$availability_adv <- fcc_cl$availability_adv*100
+fcc_cl_acs$availability_adv <- fcc_cl_acs$availability_adv*100
 
 # Regress
 reg_va1 <- lm(median_sale_amount ~ RUCC_2013,
-                     data = fcc_cl)
+                     data = fcc_cl_acs)
 reg_va2 <- lm(median_sale_amount ~ availability_adv,
-                     data = fcc_cl)
+                     data = fcc_cl_acs)
 reg_va3 <- lm(median_sale_amount ~ RUCC_2013 + availability_adv,
-              data = fcc_cl)
-stargazer(reg_va1, reg_va2, reg_va3, no.space = TRUE, digits = 2, type = "text")
+              data = fcc_cl_acs)
+reg_va4 <- lm(median_sale_amount ~ RUCC_2013 + availability_adv + hs_or_less + poverty + age_65_older + hispanic + black + density + family + foreign,
+              data = fcc_cl_acs)
+stargazer(reg_va1, reg_va2, reg_va3, reg_va4, no.space = TRUE, digits = 2, type = "text")
 
 
 #
