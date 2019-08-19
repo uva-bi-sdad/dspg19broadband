@@ -150,9 +150,26 @@ stargazer(reg_va1n, reg_va2n, reg_va3n, reg_va4n, no.space = TRUE, digits = 2, t
 # Diagnostics -----------------------------------------------------------------------------
 #
 
+# All
 autoplot(reg_va4all)
+# Residuals vs. fitted: A horizontal line with no pattern indicates a linear reationship. --> Pretty good.
+# Normal Q-Q: Residual points following the dashed line indicate normal residual distribution. --> Fail at extremes.
+# Scale-Location: Horizontal line with equal point spread indicates homoskedasticity. --> Pretty good.
+# Residuals vs leverage: Ok?
+
+# Metro
 autoplot(reg_va4m)
+# Residuals vs. fitted: A horizontal line with no pattern indicates a linear reationship. --> Pretty good!
+# Normal Q-Q: Residual points following the dashed line indicate normal residual distribution. --> Fail at extremes.
+# Scale-Location: Horizontal line with equal point spread indicates homoskedasticity. -->  Pretty good.
+# Residuals vs leverage: Ok?
+
+# Nonmetro
 autoplot(reg_va4n)
+# Residuals vs. fitted: A horizontal line with no pattern indicates a linear reationship. --> Pretty good.
+# Normal Q-Q: Residual points following the dashed line indicate normal residual distribution. --> Fail at extremes.
+# Scale-Location: Horizontal line with equal point spread indicates homoskedasticity. --> Sort of good?
+# Residuals vs leverage: Hmm.
 
 
 #
