@@ -39,7 +39,6 @@ colnames(deed14vasale)
 clva <- st_read(con, query = "SELECT * FROM usda_deed_2014_51_median_sales_tract")
 
 
-#
 # Get tract FCC data and ACS data and filter to VA -------------------------------------------------------------------
 #
 
@@ -109,38 +108,41 @@ fcc_cl_acs$foreign <- fcc_cl_acs$foreign * 100
 # Regress -----------------------------------------------------------------------------
 #
 
+fcc_cl_acs$log_mediansale <- log(fcc_cl_acs$median_sale_amount)
+
 # All tracts
-reg_va1 <- lm(median_sale_amount ~ ru_binary,
+reg_va1 <- lm(log_mediansale ~ ru_binary,
                      data = fcc_cl_acs)
-reg_va2 <- lm(median_sale_amount ~ availability_adv,
+reg_va2 <- lm(log_mediansale ~ availability_adv,
                      data = fcc_cl_acs)
-reg_va3 <- lm(median_sale_amount ~ ru_binary + availability_adv,
+reg_va3 <- lm(log_mediansale ~ ru_binary + availability_adv,
               data = fcc_cl_acs)
-reg_va4 <- lm(median_sale_amount ~ ru_binary + availability_adv + hs_or_less + poverty + age_65_older + hispanic + black + density + family + foreign,
+reg_va4 <- lm(log_mediansale ~ ru_binary + availability_adv + hs_or_less + poverty + age_65_older + hispanic + black + density + family + foreign,
               data = fcc_cl_acs)
-stargazer(reg_va1, reg_va2, reg_va3, reg_va4, no.space = TRUE, digits = 2, type = "text")
+stargazer(reg_va1, reg_va2, reg_va3, reg_va4, no.space = TRUE, digits = 2, type = "text", star.cutoffs = c(0.05, 0.01, 0.001))
 
 # Tracts in metro counties
-reg_va1 <- lm(median_sale_amount ~ RUCC_2013,
+reg_va1 <- lm(log_mediansale ~ RUCC_2013,
               data = fcc_cl_acs[fcc_cl_acs$ru_binary == "metro", ])
-reg_va2 <- lm(median_sale_amount ~ availability_adv,
+reg_va2 <- lm(log_mediansale ~ availability_adv,
               data = fcc_cl_acs[fcc_cl_acs$ru_binary == "metro", ])
-reg_va3 <- lm(median_sale_amount ~ RUCC_2013 + availability_adv,
+reg_va3 <- lm(log_mediansale ~ RUCC_2013 + availability_adv,
               data = fcc_cl_acs[fcc_cl_acs$ru_binary == "metro", ])
-reg_va4 <- lm(median_sale_amount ~ RUCC_2013 + availability_adv + hs_or_less + poverty + age_65_older + hispanic + black + density + family + foreign,
+reg_va4 <- lm(log_mediansale ~ RUCC_2013 + availability_adv + hs_or_less + poverty + age_65_older + hispanic + black + density + family + foreign,
               data = fcc_cl_acs[fcc_cl_acs$ru_binary == "metro", ])
-stargazer(reg_va1, reg_va2, reg_va3, reg_va4, no.space = TRUE, digits = 2, type = "text")
+stargazer(reg_va1, reg_va2, reg_va3, reg_va4, no.space = TRUE, digits = 2, type = "text", star.cutoffs = c(0.05, 0.01, 0.001))
 
 # Tracts in nonmetro counties
-reg_va1 <- lm(median_sale_amount ~ RUCC_2013,
+reg_va1 <- lm(log_mediansale ~ RUCC_2013,
               data = fcc_cl_acs[fcc_cl_acs$ru_binary == "nonmetro", ])
-reg_va2 <- lm(median_sale_amount ~ availability_adv,
+reg_va2 <- lm(log_mediansale ~ availability_adv,
               data = fcc_cl_acs[fcc_cl_acs$ru_binary == "nonmetro", ])
-reg_va3 <- lm(median_sale_amount ~ RUCC_2013 + availability_adv,
+reg_va3 <- lm(log_mediansale ~ RUCC_2013 + availability_adv,
               data = fcc_cl_acs[fcc_cl_acs$ru_binary == "nonmetro", ])
-reg_va4 <- lm(median_sale_amount ~ RUCC_2013 + availability_adv + hs_or_less + poverty + age_65_older + hispanic + black + density + family + foreign,
+reg_va4 <- lm(log_mediansale ~ RUCC_2013 + availability_adv + hs_or_less + poverty + age_65_older + hispanic + black + density + family + foreign,
               data = fcc_cl_acs[fcc_cl_acs$ru_binary == "nonmetro", ])
-stargazer(reg_va1, reg_va2, reg_va3, reg_va4, no.space = TRUE, digits = 2, type = "text")
+stargazer(reg_va1, reg_va2, reg_va3, reg_va4, no.space = TRUE, digits = 2, type = "text", star.cutoffs = c(0.05, 0.01, 0.001))
+
 
 #
 # Disconnect -----------------------------------------------------------------------------
