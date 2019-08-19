@@ -5,10 +5,12 @@ library(here)
 library(data.table)
 library(dplyr)
 library(naniar)
-library(dbplyr)
 library(ggplot2)
 library(maps)
 library(ggthemes)
+library(viridis)
+
+options(scipen = 99999999)
 
 
 #
@@ -84,15 +86,38 @@ table(deed14va$corporate.indicator)
 # Median sales data plot --------------------------------------------------------------------------------
 #
 
+# Distribution
 summary(deed14vasale$median_sale_amount)
 boxplot(deed14vasale$median_sale_amount)
 
-deed14vasale$medsale_quant <- deed14vasale$median_sale_amount
-deed14vasale$medsale_quant <- cut(deed14vasale$medsale_quant, quantile(deed14vasale$medsale_quant, seq(0, 1, 0.10), na.rm = TRUE), include.lowest = TRUE)
-                                           
-ggplot(deed14vasale, aes(fill = medsale_quant)) +
+# Get deciles
+deed14vasale$medsale_decile <- cut(deed14vasale$median_sale_amount, quantile(deed14vasale$median_sale_amount, seq(0, 1, by = 0.10), na.rm = TRUE), include.lowest = TRUE,
+                                   labels = c("[5,050 - 67,000]", 
+                                              "(67,000 - 109,000]",
+                                              "(109,000 - 139,000]",
+                                              "(139,000 - 168,000]",
+                                              "(168,000 - 201,000]",
+                                              "(201,000 - 245,000]",
+                                              "(245,000 - 309,000]",
+                                              "(309,000 - 395,000]",
+                                              "(395,000 - 529,000]",
+                                              "(529,000 - 80,400,000]"))
+  
+# Plot deciles                            
+ggplot(deed14vasale, aes(fill = medsale_decile)) +
   geom_sf() +
-  labs(title = "Median property sale amount quantiles in Virginia by tract", caption = "Source: CoreLogic 2014.") +
+  labs(title = "Median property sale amount (USD) deciles in Virginia by tract", caption = "Source: CoreLogic 2014.") +
+  scale_fill_viridis(option = "magma", direction = -1, discrete = TRUE) +
+  ggthemes::theme_map()
+
+# Get log sale
+deed14vasale$medsale_log <- log(deed14vasale$median_sale_amount)
+
+# Plot deciles                            
+ggplot(deed14vasale, aes(fill = medsale_log)) +
+  geom_sf(size = 0.1) +
+  labs(title = "Logged median property sale amount (USD) in Virginia by tract", caption = "Source: CoreLogic 2014.", legend = "Logged median sale price (USD)") +
+  scale_fill_viridis(option = "magma", direction = -1, discrete = FALSE) +
   ggthemes::theme_map()
 
 
