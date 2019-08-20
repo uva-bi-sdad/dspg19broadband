@@ -549,7 +549,7 @@ ui <- fluidPage(
          h5('The dashboard visualizes broadband coverage report discrepancies between three publicly available datasets: the 2015 Federal Communications Commission
              Form 477 provider-reported data, American Community Survey 2013-17 consumer-reported broadband subscription data, and 2018 Microsoft Airband Initiative broadband usage data.'),
          p(),
-         h5('We would like to acknowledge the support of BroadbandNow.com, an internet provider coverage and availability aggregator, which enabled us to overlay city-level coverage data.')
+         h5('We would like to acknowledge the support of', a('BroadbandNow.com,', href = 'https://www.broadbandnow.com/'), 'an internet provider coverage and availability aggregator which enabled us to overlay city-level coverage data.')
   ),
   hr(),
   fluidRow(width = 4,
