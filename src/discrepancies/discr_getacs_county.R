@@ -5,6 +5,8 @@ library(acs)
 library(rgeos)
 library(raster)
 library(dplyr)
+library(sf)
+
 
 census_api_key("548d39e0315b591a0e9f5a8d9d6c1f22ea8fafe0") # Teja's key
 
@@ -76,6 +78,9 @@ acs_estimates <- acs_est2 %>% transmute(
 #
 # Write out ---------------------------------------------------------------------------------------------------------------
 #
+
+st_write(acs_est2, "./data/working/acs_2013-17/raw/acs_2013-17_raw_county.shp", driver = "ESRI Shapefile")  # create to a shapefile 
+st_write(acs_estimates, "./data/working/acs_2013-17/calc/acs_2013-17_calc_count.shp", driver = "ESRI Shapefile")  # create to a shapefile 
 
 write.csv(acs_est2, file = "./data/working/acs_2013-17/acs_2013-17_raw_county.csv", row.names = F)
 write.csv(acs_estimates, file = "./data/working/acs_2013-17/acs_2013-17_calc_county.csv", row.names = F)
