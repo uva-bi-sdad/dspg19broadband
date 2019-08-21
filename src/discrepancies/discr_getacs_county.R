@@ -27,24 +27,28 @@ acsvars <- c("B15003_001","B15003_002","B15003_003","B15003_004","B15003_005","B
              "B09019_002","B09019_003",                                                                                            # family households, in family households/in households
              "B05002_001","B05002_013")                                                                                            # foreign born, foreign/total
 
-# Get tract-level variables from ACS 2012-2016 (5-year)
-acs_est <- get_acs(geography = "tract", state = state_fips[1], variables = acsvars, year = 2016, survey = "acs5", cache_table = TRUE, output = "wide")
+# Get county-level variables from ACS 2013-2017 (5-year)
+acs_est <- get_acs(geography = "county", state = state_fips[1], variables = acsvars, year = 2017, survey = "acs5", cache_table = TRUE, output = "wide")
 for(i in 2:length(state_fips)){
-  tmp <- get_acs(geography = "tract", state = state_fips[i], variables = acsvars, year = 2016, survey = "acs5", cache_table = TRUE, output = "wide")
+  tmp <- get_acs(geography = "county", state = state_fips[i], variables = acsvars, year = 2017, survey = "acs5", cache_table = TRUE, output = "wide")
   acs_est <- rbind(acs_est, tmp)
 }
 
 # Calculate variables: tract area for population density
-census_tracts <- tracts(state = state_fips[1], year = 2016)
+census_counties <- counties(state = state_fips[1], year = 2017)
 for(i in 2:length(state_fips)){
-  tmp <- tracts(state = state_fips[i], year = 2016)
-  census_tracts <- rbind(census_tracts, tmp)
+  tmp <- counties(state = state_fips[i], year = 2017)
+  census_counties <- rbind(census_counties, tmp)
 }
 
-tract_area <- data.frame(GEOID = census_tracts@data$GEOID, area_sqmi = area(census_tracts)/2589988)
+county_area <- data.frame(GEOID = census_counties@data$GEOID, area_sqmi = area(census_counties)/2589988)  # convert sqm to square miles: divide by 2,589,988
+
+# GEOID to numeric
+acs_est$GEOID <- as.numeric(acs_est$GEOID)
+county_area$GEOID <- as.numeric(county_area$GEOID)
 
 # Calculate variables: rates / % population
-acs_est2 <- acs_est %>% left_join(tract_area, by = "GEOID")
+acs_est2 <- acs_est %>% left_join(county_area, by = "GEOID")
 acs_estimates <- acs_est2 %>% transmute(
   GEOID = GEOID,
   NAME = NAME,
@@ -66,5 +70,5 @@ acs_estimates <- acs_est2 %>% transmute(
 # Write out ---------------------------------------------------------------------------------------------------------------
 #
 
-write.csv(acs_est2, file = "./data/working/acs_2012-16/acs_2012-16_raw_tract.csv", row.names = F)
-write.csv(acs_estimates, file = "./data/working/acs_2012-16/acs_2012-16_calc_tract.csv", row.names = F)
+write.csv(acs_est2, file = "./data/working/acs_2013-17/acs_2013-17_raw_county.csv", row.names = F)
+write.csv(acs_estimates, file = "./data/working/acs_2013-17/acs_2013-17_calc_county.csv", row.names = F)

@@ -50,7 +50,7 @@ fcc <- fread(fcc_file, colClasses = c(state = "character", county = "character",
 fccva <- fcc %>% filter(State == "VA")
 
 # Get ACS 2012-14 file
-acs_file <- here("data", "working", "acs_2012-16", "acs_2012-16_calc.csv")
+acs_file <- here("data", "working", "acs_2012-16", "acs_2012-16_calc_tract.csv")
 acs <- fread(acs_file) 
 
 acsva <- acs %>% filter(str_detect(NAME, ", Virginia")) # Virginia has 1,907 census tracts - correct
