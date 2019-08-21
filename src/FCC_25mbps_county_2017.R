@@ -17,7 +17,7 @@ library(usmap)
 library(readr)
 
 ## Read in FCC data and create GEOID from BlockCode
-fcc <- fread("./data/original/FCC/FCC-Dec17v2-FixedNoSat/FCC-Dec17v2-FixedNoSat.csv", colClasses = c(BlockCode = "character"))
+fcc <- fread("./data/original/FCC/FCC-Dec17v2-FixedNoSat/fbd_us_without_satellite_dec2017_v2.csv", colClasses = c(BlockCode = "character"))
 fcc <- fcc[ ,c('HocoNum', 'StateAbbr', 'BlockCode', 'TechCode', 'MaxAdDown', 'MaxCIRDown', 'Consumer', 'Business')]
 fcc <- setDT(fcc)
 fcc[, GEOID := substr(BlockCode, 1, 12)] 
@@ -53,7 +53,7 @@ fcc_county$state_fips <- usmap::fips(fcc_county$state)
 ## Bring In Subscription Data
 connections <- fread('./data/original/FCC/tract_map_jun_2017.csv/tract_map_jun_2017.csv', colClasses = c(tractcode = "character"))
 connections$county <- substr(connections$tractcode, 1,5)
-connections = subset(connections, select = -c(tractcode) )
+connections <- subset(connections, select = -c(tractcode) )
 
 # convert numbers to %s: 0 - 0%, 1 - min=0% max=200/1000, 2 - min=200/1000, max=400/1000, 
 # 3 - min=400/1000, max=600/1000, 4 - min=600/1000, max=800/1000, 5 - min=800/1000, max=NA
