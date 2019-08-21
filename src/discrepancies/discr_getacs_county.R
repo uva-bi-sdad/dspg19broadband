@@ -28,13 +28,15 @@ acsvars <- c("B15003_001","B15003_002","B15003_003","B15003_004","B15003_005","B
              "B05002_001","B05002_013")                                                                                            # foreign born, foreign/total
 
 # Get county-level variables from ACS 2013-2017 (5-year)
-acs_est <- get_acs(geography = "county", state = state_fips[1], variables = acsvars, year = 2017, survey = "acs5", cache_table = TRUE, output = "wide")
+acs_est <- get_acs(geography = "county", state = state_fips[1], variables = acsvars, year = 2017, survey = "acs5", cache_table = TRUE, output = "wide", geometry = TRUE,
+                   keep_geo_vars = TRUE)
 for(i in 2:length(state_fips)){
-  tmp <- get_acs(geography = "county", state = state_fips[i], variables = acsvars, year = 2017, survey = "acs5", cache_table = TRUE, output = "wide")
+  tmp <- get_acs(geography = "county", state = state_fips[i], variables = acsvars, year = 2017, survey = "acs5", cache_table = TRUE, output = "wide", geometry = TRUE,
+                 keep_geo_vars = TRUE)
   acs_est <- rbind(acs_est, tmp)
 }
 
-# Calculate variables: tract area for population density
+# Calculate variables: county area for population density
 census_counties <- counties(state = state_fips[1], year = 2017)
 for(i in 2:length(state_fips)){
   tmp <- counties(state = state_fips[i], year = 2017)
@@ -42,16 +44,20 @@ for(i in 2:length(state_fips)){
 }
 
 county_area <- data.frame(GEOID = census_counties@data$GEOID, area_sqmi = area(census_counties)/2589988)  # convert sqm to square miles: divide by 2,589,988
-
-# GEOID to numeric
-acs_est$GEOID <- as.numeric(acs_est$GEOID)
-county_area$GEOID <- as.numeric(county_area$GEOID)
+county_area$GEOID <- as.character(county_area$GEOID)
 
 # Calculate variables: rates / % population
 acs_est2 <- acs_est %>% left_join(county_area, by = "GEOID")
 acs_estimates <- acs_est2 %>% transmute(
   GEOID = GEOID,
-  NAME = NAME,
+  STATEFP = STATEFP,
+  COUNTYFP = COUNTYFP,
+  AFFGEOID = AFFGEOID,
+  ALAND = ALAND,
+  AWATER = AWATER,
+  LSAD = LSAD,
+  NAME.x = NAME.x,
+  NAME.y = NAME.y,
   population = B01001_001E,
   hs_or_less = (B15003_002E + B15003_003E + B15003_004E + B15003_005E + B15003_006E + B15003_007E + B15003_008E + B15003_009E + B15003_010E +
                   B15003_011E + B15003_012E + B15003_013E + B15003_014E + B15003_015E + B15003_016E + B15003_017E + B15003_018E) / B15003_001E,
@@ -62,7 +68,8 @@ acs_estimates <- acs_est2 %>% transmute(
   black = B02001_003E / B02001_001E,
   density = B01001_001E / area_sqmi,
   family = B09019_003E / B09019_002E,
-  foreign = B05002_013E / B05002_001E
+  foreign = B05002_013E / B05002_001E,
+  geometry = geometry
 )
 
 

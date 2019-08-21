@@ -17,14 +17,12 @@ library(usmap)
 library(readr)
 
 ## Read in FCC data and create GEOID from BlockCode
-fcc <-  read_csv("./data/original/FCC/FCC-Dec17v2-FixedNoSat/FCC-Dec17v2-FixedNoSat.csv")
+fcc <- fread("./data/original/FCC/FCC-Dec17v2-FixedNoSat/FCC-Dec17v2-FixedNoSat.csv", colClasses = c(BlockCode = "character"))
 fcc <- fcc[ ,c('HocoNum', 'StateAbbr', 'BlockCode', 'TechCode', 'MaxAdDown', 'MaxCIRDown', 'Consumer', 'Business')]
 fcc <- setDT(fcc)
 fcc[, GEOID := substr(BlockCode, 1, 12)] 
 fcc[, county := substr(BlockCode, 1, 5)] 
 names(fcc) <- tolower(names(fcc))
-fcc$geoid <- as.numeric(fcc$geoid)
-fcc$county <- as.numeric(fcc$county)
 
 ## Population - from Decennial Census (2010)
 pop <- fread('./data/working/population_by_census_block_2010.csv', colClasses = c(GEOID = "character"))
@@ -32,8 +30,6 @@ pop <- fread('./data/working/population_by_census_block_2010.csv', colClasses = 
 pop$GEOID <- ifelse(nchar(pop$GEOID) !=15 ,gsub(" ", "", paste("0",pop$GEOID), fixed = TRUE), pop$GEOID)
 pop[, county := substr(GEOID, 1, 5)] 
 names(pop) <- tolower(names(pop))
-pop$geoid <- as.numeric(pop$geoid)
-pop$county <- as.numeric(pop$county)
 
 ## Merge fcc and population data by block
 fcc_pop <- merge(fcc, pop, by.x = c('blockcode', 'county'), by.y = c('geoid', 'county'), all.x = TRUE, all.y = FALSE)
@@ -53,7 +49,6 @@ fcc_county <- fcc_block[, .(state = max(state), consumer = max(consumer), busine
 
 ## Parse GEOID into State, County, Tract
 fcc_county$state_fips <- usmap::fips(fcc_county$state)
-
 
 ## Bring In Subscription Data
 connections <- fread('./data/original/FCC/tract_map_jun_2017.csv/tract_map_jun_2017.csv', colClasses = c(tractcode = "character"))
@@ -92,13 +87,11 @@ connections <- connections %>% group_by(county) %>%
             max_pcat_10x1_per = max(pcat_all_10x1_max), min_pcat_10x1_per = min(pcat_all_10x1_min), 
             max_pcat_all = max(pcat_all), min_pcat_all = min(pcat_all), max_pcat_10x1=max(pcat_10x1), 
             min_pcat_10x1=min(pcat_10x1))
-connections$county <- as.numeric(connections$county)
 
 fcc_full <- merge(fcc_county, connections, by = 'county', all.x = TRUE)
 
 # rural/urban
 r_u <- fread('./data/working/ruralurban2013.csv', colClasses = 'character')
-r_u$FIPS <- as.numeric(r_u$FIPS)
 fcc_final  <- merge(fcc_full, r_u, by.x = 'county', by.y = 'FIPS', all.x = TRUE, all.y = FALSE)
 
 # write out
