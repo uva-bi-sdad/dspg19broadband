@@ -482,52 +482,36 @@ server <- function(input,output,session){
                             Definition = c('Data come from ACS table B28002, which describes the presence and types of internet subscriptions in households.', 
                                            'Data come from ACS table B28002, which describes the presence and types of internet subscriptions in households. This metric excludes cellular data and satellite internet, and we use it in our comparisons with FCC Form 477-reported broadband coverage.', 
                                            'The data show bins (maximum and minimum) for the number of internet connections per 1,000 households on the census tract level. We use the data as of December 31, 2015, and connections of at least 10 mbps downstream in order to create an approximately one-to-one comparison between FCC and ACS data.',
-                                           'The metric compares the ACS coverage (broadband subscriptions excluding cellular and satellite) and FCC subscription coverage bins. It determines whether ACS self-reported connections fall within the FCC-reported bins internet subscription bins.', 
-                                           'The metric uses the maximum advertised downstream speed offered by the provider in the block for consumer service from FCC form 477, as well as  population data from the Decennial Census to calculate the proportion of
-                                           the census tract population that has access to at least one provider offering at least 25 mbps maximum advertised downstream speed.',
-                                           'The metric indicates the discrepancy in percent points between the FCC coverage metric and the ACS coverage (007) metric.',
+                                           'The metric compares ACS coverage (broadband subscriptions excluding cellular and satellite) and FCC subscription coverage bins. It determines whether ACS self-reported connections fall within the FCC-reported bins internet subscription bins.', 
+                                           'The metric uses the maximum advertised downstream speed offered by the provider in the block for consumer service from FCC form 477, as well as  population data from the Decennial Census to calculate the proportion of the census tract population that has access to at least one provider offering at least 25 mbps maximum advertised downstream speed.',
+                                           'The metric indicates the discrepancy in percent points between the FCC coverage metric and the ACS coverage (excluding cellular and satellite - item 007) metric.',
                                            'Data come from ACS table B28002 and describe the presence and types of internet subscription in households.', 
                                            'Data come from ACS table B28002 and describe the presence and type of internet subscription in households. This metric excludes cellular data and satellite internet, and we use it for comparison to FCC Form 477-reported coverage.', 
                                            'The data show bins (maximum and minimum) for the number of internet connections per 1,000 households within a block group. We use data as of December 31, 2015, and connections of at least 10 mbps downstream in order to create an approximately one-to-one comparison between FCC and ACS data.',
                                            'The metric compares ACS coverage (excluding cellular and satellite) and FCC subscription coverage bins in to determine whether ACS self-reported connections fall within FCC-reported bins for internet subscriptions.', 
-                                           'The metric uses the maximum advertised downstream speed offered by the provider in the block for consumer service from FCC form 477, as well as population data from the decennial census to calculate the proportion of
-                                           block group population that has access to at least one provider offering at least 25 mbps maximum advertised downstream speed.',
-                                           'The metric indicates the discrepancy in percent points between the FCC coverage metric and the ACS coverage (007) metric.',
+                                           'The metric uses the maximum advertised downstream speed offered by the provider in the block for consumer service from FCC form 477, as well as population data from the decennial census to calculate the proportion of block group population that has access to at least one provider offering at least 25 mbps maximum advertised downstream speed.',
+                                           'The metric indicates the discrepancy in percent points between the FCC coverage metric and the ACS coverage (excluding cellular and satellite - item 007) metric.',
                                            'Data come from Microsoft and include the percent of people per county using the internet at 25 mbps downstream.',
                                            'The metric shows bins (maximum and minimum) for the number of internet connections per 1,000 households within the county. We use data as of December 31, 2015, and connections of at least 10 mbps downstream to create an approximately one-to-one comparison between FCC and Microsoft data.',
-                                           'The metric uses the maximum advertised downstream speed offered by the provider in the block for consumer service from FCC form 477, as well as population data from the decennial census to calculate the proportion of
-                                           county population that has access to at least one provider that offers at least 25 mbps maximum advertised downstream speed.',
+                                           'The metric uses the maximum advertised downstream speed offered by the provider in the block for consumer service from FCC form 477, as well as population data from the decennial census to calculate the proportion of county population that has access to at least one provider that offers at least 25 mbps maximum advertised downstream speed.',
                                            'The metric indicates the discrepancy in percent points between the FCC coverage metric and the Microsoft usage metric.'
                             ),
                             Source = c('2013-2017 American Community Survey 5-Year Estimates; Table B28002, Item 004', 
                                        '2013-2017 American Community Survey 5-Year Estimates; Table B28002, Item 007',
-                                       'Federal Communications Commission Form 477 Residential Fixed Internet Access Service Connections per 1000 Households by Census Tract 
-                                       (December 31, 2015)', 
-                                       'Constructed Metric. Primary data sources are 2013-2017 American Community Survey 5-Year Estimates; Table B28002, Item 007 
-                                       and Federal Communications Commission Form 477 Residential Fixed Internet Access Service Connections per 1000 Households by Census Tract 
-                                       (December 31, 2015)', 
+                                       'Federal Communications Commission Form 477 Residential Fixed Internet Access Service Connections per 1000 Households by Census Tract (December 31, 2015)', 
+                                       'Constructed Metric. Primary data sources are 2013-2017 American Community Survey 5-Year Estimates; Table B28002, Item 007 and Federal Communications Commission Form 477 Residential Fixed Internet Access Service Connections per 1000 Households by Census Tract (December 31, 2015)', 
                                        'Federal Communications Commission Form 477 (2015); Census Decennial Population (2010)', 
-                                       'Constructed Metric. Primary data sources are 2013-2017 American Community Survey 5-Year Estimates; Table B28002, Item 007,
-                                       Federal Communications Commission Form 477; Max Advertised Downstream Speed (mbps) (2015), and ACS Decennial Population (2010)',
+                                       'Constructed Metric. Primary data sources are 2013-2017 American Community Survey 5-Year Estimates; Table B28002, Item 007, Federal Communications Commission Form 477; Max Advertised Downstream Speed (mbps) (2015), and ACS Decennial Population (2010)',
                                        '2013-2017 American Community Survey 5-Year Estimates; Table B28002, Item 004', 
                                        '2013-2017 American Community Survey 5-Year Estimates; Table B28002, Item 007',
-                                       'Federal Communications Commission Form 477 Residential Fixed Internet Access Service Connections per 1000 Households by Census Tract 
-                                       (December 31, 2015)', 
-                                       'Constructed Metric. Primary data sources are 2013-2017 American Community Survey 5-Year Estimates; Table B28002, Item 007 
-                                       and Federal Communications Commission Form 477 Residential Fixed Internet Access Service Connections per 1000 Households by Census Tract 
-                                       (December 31, 2015)', 
+                                       'Federal Communications Commission Form 477 Residential Fixed Internet Access Service Connections per 1000 Households by Census Tract (December 31, 2015)', 
+                                       'Constructed Metric. Primary data sources are 2013-2017 American Community Survey 5-Year Estimates; Table B28002, Item 007 and Federal Communications Commission Form 477 Residential Fixed Internet Access Service Connections per 1000 Households by Census Tract (December 31, 2015)', 
                                        'Federal Communications Commission Form 477 (2015); Census Decennial Population (2010)', 
-                                       'Constructed Metric. Primary data sources are 2013-2017 American Community Survey 5-Year Estimates; Table B28002, Item 007,
-                                       Federal Communications Commission Form 477; Max Advertised Downstream Speed (mbps) (2015), and Census Decennial Population (2010)',
+                                       'Constructed Metric. Primary data sources are 2013-2017 American Community Survey 5-Year Estimates; Table B28002, Item 007, Federal Communications Commission Form 477; Max Advertised Downstream Speed (mbps) (2015), and Census Decennial Population (2010)',
                                        'Microsoft Airband Initiative 2018 Broadband Usage Data',
-                                       'Federal Communications Commission Form 477 Residential Fixed Internet Access Service Connections per 1000 Households by Census Tract 
-                                       (December 31, 2015)', 
-                                       'Constructed Metric. Primary data sources are 2013-2017 American Community Survey 5-Year Estimates; Table B28002, Item 007 
-                                       and Federal Communications Commission Form 477 Residential Fixed Internet Access Service Connections per 1000 Households by Census Tract 
-                                       (December 31, 2015)', 
+                                       'Federal Communications Commission Form 477 Residential Fixed Internet Access Service Connections per 1000 Households by Census Tract (December 31, 2015)', 
                                        'Federal Communications Commission Form 477 (2015); Census Decennial Population (2010)', 
-                                       'Constructed Metric. Primary data sources are 2013-2017 American Community Survey 5-Year Estimates; Table B28002, Item 007,
-                                       and Microsoft Airband Initative Broadband Usage Data'
+                                       'Constructed Metric. Primary data sources are 2013-2017 American Community Survey 5-Year Estimates; Table B28002, Item 007, and Microsoft Airband Initative Broadband Usage Data'
                                        
                             )
   )
