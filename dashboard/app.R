@@ -134,7 +134,7 @@ make_state_map <- function(state, geography, r_u){
             "<strong>Population (2010): </strong>",
             data$Population_2010,
             "<br />",
-            "<strong>RUCC: </strong>",
+            "<strong>Rural-Urban Continuum Code: </strong>",
             data$RUCC_2013,
             "<br />",
             "<strong>ACS Coverage: Broadband (Any Type) (004): </strong>",
@@ -149,7 +149,7 @@ make_state_map <- function(state, geography, r_u){
             "<strong>FCC Subscription Coverage 10x1 (Min): </strong>",
             round(data$pcat_all_10x1_min*100,1),"%",
             "<br />",
-            "<strong>ACS Internet In FCC Subs Bin: </strong>",
+            "<strong>ACS Internet in FCC Subs Bin: </strong>",
             data$B28002_007_per < data$pcat_all_10x1_max*100 & data$B28002_007_per > data$pcat_all_10x1_min*100,
             "<br />",
             "<strong>FCC Coverage (Advertised): </strong>",
@@ -209,7 +209,7 @@ make_state_map <- function(state, geography, r_u){
             "<strong>Population (2010): </strong>",
             q$Population_2010,
             "<br />",
-            "<strong>RUCC: </strong>",
+            "<strong>Rural-Urban Continuum Code: </strong>",
             q$RUCC_2013,
             "<br />"
       ),
@@ -234,10 +234,10 @@ make_state_map <- function(state, geography, r_u){
       dt_filter(as.character(stateid) == unique(data$state)) %>% dt_filter(rural_urban %in% unique(data$rural_urban))
     
     labels <- lapply(
-      paste("<strong>County:</strong>",
+      paste("<strong>County: </strong>",
             data$County_Name,
             "<br />",
-            "<strong>Tract:</strong>",
+            "<strong>Tract: </strong>",
             data$tract_short,
             "<br />",
             "<strong>Land Area (square meters): </strong>",
@@ -246,7 +246,7 @@ make_state_map <- function(state, geography, r_u){
             "<strong>Population (2010): </strong>",
             data$Population_2010,
             "<br />",
-            "<strong>RUCC: </strong>",
+            "<strong>Rural-Urban Continuum Code: </strong>",
             data$RUCC_2013,
             "<br />",
             "<strong>ACS Coverage: Broadband (Any Type) (004): </strong>",
@@ -261,7 +261,7 @@ make_state_map <- function(state, geography, r_u){
             "<strong>FCC Subscription Coverage 10x1 (Min): </strong>",
             round(data$pcat_all_10x1_min*100,1),"%",
             "<br />",
-            "<strong>ACS Internet In FCC Subs Bin: </strong>",
+            "<strong>ACS Internet in FCC Subs Bin: </strong>",
             data$B28002_007_per < data$pcat_all_10x1_max*100 & data$B28002_007_per > data$pcat_all_10x1_min*100,
             "<br />",
             "<strong>FCC Coverage (Advertised): </strong>",
@@ -320,7 +320,7 @@ make_state_map <- function(state, geography, r_u){
             "<strong>Population (2010): </strong>",
             q$Population_2010,
             "<br />",
-            "<strong>RUCC: </strong>",
+            "<strong>Rural-Urban Continuum Code: </strong>",
             q$RUCC_2013,
             "<br />"
       ),
@@ -343,7 +343,7 @@ make_state_map <- function(state, geography, r_u){
     q <- read.csv(dat) %>% data.table() %>% dt_mutate(rural_urban = ifelse(RUCC_2013 < 4, 'Urban','Rural')) %>% 
       dt_filter(as.character(stateid) == unique(data$state)) %>% dt_filter(rural_urban %in% unique(data$rural_urban))
     labels <- lapply(
-      paste("<strong>County:</strong>",
+      paste("<strong>County: </strong>",
             data$COUNTY.NAME,
             "<br />",
             "<strong>Land Area (square meters): </strong>",
@@ -352,7 +352,7 @@ make_state_map <- function(state, geography, r_u){
             "<strong>Population (2010): </strong>",
             data$Population_2010,
             "<br />",
-            "<strong>RUCC: </strong>",
+            "<strong>Rural-Urban Continuum Code: </strong>",
             data$RUCC_2013,
             "<br />",
             "<strong>Microsoft Usage: </strong>",
@@ -433,7 +433,7 @@ make_state_map <- function(state, geography, r_u){
             "<strong>Population (2010): </strong>",
             q$Population_2010,
             "<br />",
-            "<strong>RUCC: </strong>",
+            "<strong>Rural-Urban Continuum Code: </strong>",
             q$RUCC_2013,
             "<br />"
       ),
@@ -461,16 +461,16 @@ server <- function(input,output,session){
     make_state_map(input$State, input$Geography, input$R_U)
   })
   
-  definitions <- data.table(Geography = c(rep('Census Tract',6), rep('Block Group', 6), rep('County',4)),
+  definitions <- data.table(Geography = c(rep('Census Tract', 6), rep('Block Group', 6), rep('County', 4)),
                             Metric = c('ACS Coverage (Broadband of Any Type)', 
                                        'ACS Coverage (Excluding Cellular/Satellite)', 
-                                       'FCC  Subscription Coverage',
+                                       'FCC Subscription Coverage',
                                        'ACS Internet in FCC Subs Bin',
                                        'FCC Coverage (Advertised)',
                                        'Percent Discrepancy',
                                        'ACS Coverage (Broadband of Any Type)', 
                                        'ACS Coverage (Excluding Cellular/Satellite)', 
-                                       'FCC  Subscription Coverage',
+                                       'FCC Subscription Coverage',
                                        'ACS Internet in FCC Subs Bin',
                                        'FCC Coverage (Advertised)',
                                        'Percent Discrepancy',
@@ -479,49 +479,55 @@ server <- function(input,output,session){
                                        'FCC Coverage (Advertised)',
                                        'Percent Discrepancy'
                             ), 
-                            Definition = c('This comes from ACS table B28002 within the ACS Households Universe and describes Presence and Types of Internet Subscriptions in Household.', 
-                                           'This comes from ACS table B28002 within the ACS Households Universe and describes Presence and Type of Internet Subscription in Household. This metric discludes cellular data and satellite internet, and is used to compare to FCC Form 477 Coverage.', 
-                                           'This data shows bins (Max and Min) for the number of internet connections/1000 households on the Census Tract level. We use the data as of December 31, 2015 and connections of at least 10 Mbps in order to create an approximately one-to-one comparison between the FCC and ACS data.',
-                                           'This metric compares the ACS Coverage (Excluding Cellular/Satellite) and the  FCC Subscription Coverage bins in order to see whether ACS self-reported connections fall within the FCC-reported bins for internet subscriptions.', 
-                                           'This metric utilizes the Maximum advertised downstream speed/bandwidth offered by the provider in the block for Consumer service from FCC form 477 as well as the population data from the Decennial Census to calculate the proportion of
-                                           the Census Tract population that has access to at least 1 provider that offers at least 25 Mbps maximum advertised downstream speed/bandwidth',
-                                           'This metric observes the discrepancy in percent points between the FCC Coverage metric and the ACS Coverage (007) metric',
-                                           'This comes from ACS table B28002 within the ACS Households Universe and describes Presence and Types of Internet Subscriptions in Household.', 
-                                           'This comes from ACS table B28002 within the ACS Households Universe and describes Presence and Type of Internet Subscription in Household. This metric discludes cellular data and satellite internet, and is used to compare to FCC Form 477 Coverage.', 
-                                           'This data shows bins (Max and Min) for the number of internet connections/1000 households within the Block Group. We use the data as of December 31, 2015 and connections of at least 10 Mbps in order to create an approximately one-to-one comparison between the FCC and ACS data.',
-                                           'This metric compares the ACS Coverage (Excluding Cellular/Satellite) and the  FCC Subscription Coverage bins in order to see whether ACS self-reported connections fall within the FCC-reported bins for internet subscriptions.', 
-                                           'This metric utilizes the Maximum advertised downstream speed/bandwidth offered by the provider in the block for Consumer service from FCC form 477 as well as the population data from the Decennial Census to calculate the proportion of
-                                           the Block Group population that has access to at least 1 provider that offers at least 25 Mbps maximum advertised downstream speed/bandwidth',
-                                           'This metric observes the discrepancy in percent points between the FCC Coverage metric and the ACS Coverage (007) metric',
-                                           'This is is data from Microsoft that includes the percent of people in a particular county using the internet at 25 Mbps.',
-                                           'This data shows bins (Max and Min) for the number of internet connections/1000 households within the County. We use the data as of December 31, 2015 and connections of at least 10 Mbps in order to create an approximately one-to-one comparison between the FCC and Microsoft data.',
-                                           'This metric utilizes the Maximum advertised downstream speed/bandwidth offered by the provider in the block for Consumer service from FCC form 477 as well as the population data from the Decennial Census to calculate the proportion of
-                                           the County population that has access to at least 1 provider that offers at least 25 Mbps maximum advertised downstream speed/bandwidth',
-                                           'This metric observes the discrepancy in percent points between the FCC Coverage metric and the Microsoft Usage metric'
+                            Definition = c('Data come from ACS table B28002, which describes the presence and types of internet subscriptions in households.', 
+                                           'Data come from ACS table B28002, which describes the presence and types of internet subscriptions in households. This metric excludes cellular data and satellite internet, and we use it in our comparisons with FCC Form 477-reported broadband coverage.', 
+                                           'The data show bins (maximum and minimum) for the number of internet connections per 1,000 households on the census tract level. We use the data as of December 31, 2015, and connections of at least 10 mbps downstream in order to create an approximately one-to-one comparison between FCC and ACS data.',
+                                           'The metric compares the ACS coverage (broadband subscriptions excluding cellular and satellite) and FCC subscription coverage bins. It determines whether ACS self-reported connections fall within the FCC-reported bins internet subscription bins.', 
+                                           'The metric uses the maximum advertised downstream speed offered by the provider in the block for consumer service from FCC form 477, as well as  population data from the Decennial Census to calculate the proportion of
+                                           the census tract population that has access to at least one provider offering at least 25 mbps maximum advertised downstream speed.',
+                                           'The metric indicates the discrepancy in percent points between the FCC coverage metric and the ACS coverage (007) metric.',
+                                           'Data come from ACS table B28002 and describe the presence and types of internet subscription in households.', 
+                                           'Data come from ACS table B28002 and describe the presence and type of internet subscription in households. This metric excludes cellular data and satellite internet, and we use it for comparison to FCC Form 477-reported coverage.', 
+                                           'The data show bins (maximum and minimum) for the number of internet connections per 1,000 households within a block group. We use data as of December 31, 2015, and connections of at least 10 mbps downstream in order to create an approximately one-to-one comparison between FCC and ACS data.',
+                                           'The metric compares ACS coverage (excluding cellular and satellite) and FCC subscription coverage bins in to determine whether ACS self-reported connections fall within FCC-reported bins for internet subscriptions.', 
+                                           'The metric uses the maximum advertised downstream speed offered by the provider in the block for consumer service from FCC form 477, as well as population data from the decennial census to calculate the proportion of
+                                           block group population that has access to at least one provider offering at least 25 mbps maximum advertised downstream speed.',
+                                           'The metric indicates the discrepancy in percent points between the FCC coverage metric and the ACS coverage (007) metric.',
+                                           'Data come from Microsoft and include the percent of people per county using the internet at 25 mbps downstream.',
+                                           'The metric shows bins (maximum and minimum) for the number of internet connections per 1,000 households within the county. We use data as of December 31, 2015, and connections of at least 10 mbps downstream to create an approximately one-to-one comparison between FCC and Microsoft data.',
+                                           'The metric uses the maximum advertised downstream speed offered by the provider in the block for consumer service from FCC form 477, as well as population data from the decennial census to calculate the proportion of
+                                           county population that has access to at least one provider that offers at least 25 mbps maximum advertised downstream speed.',
+                                           'The metric indicates the discrepancy in percent points between the FCC coverage metric and the Microsoft usage metric.'
                             ),
-                            Source = c('2013-2017 American Community Survey  5-Year Estimates; B28002, Question 004', 
-                                       '2013-2017 American Community Survey  5-Year Estimates; B28002, Question 007',
-                                       'Residential Fixed Internet Access Service Connections per 1000 Households by Census Tract (December 31,2015)', 
-                                       'Secondary Metric. Primary data sources are 2013-2017 American Community Survey  5-Year Estimates; B28002, Question 007 and 
-                                       Residential Fixed Internet Access Service Connections per 1000 Households by Census Tract (December 31,2015)', 
-                                       'FCC Form  477 (2015); ACS Decennial Population (2010)', 
-                                       'Secondary Metric. Primary data sources are 2013-2017 American Community Survey  5-Year Estimates; B28002, Question 007,
-                                       FCC Form 477; Max Advertised Downstream Speed (mbps)  (2015), and ACS Decennial Population (2010)',
-                                       '2013-2017 American Community Survey  5-Year Estimates; B28002, Question 004', 
-                                       '2013-2017 American Community Survey  5-Year Estimates; B28002, Question 007',
-                                       'Residential Fixed Internet Access Service Connections per 1000 Households by Census Tract (December 31,2015)', 
-                                       'Secondary Metric. Primary data sources are 2013-2017 American Community Survey  5-Year Estimates; B28002, Question 007 and 
-                                       Residential Fixed Internet Access Service Connections per 1000 Households by Census Tract (December 31,2015)', 
-                                       'FCC Form  477 (2015); ACS Decennial Population (2010)', 
-                                       'Secondary Metric. Primary data sources are 2013-2017 American Community Survey  5-Year Estimates; B28002, Question 007,
-                                       FCC Form 477; Max Advertised Downstream Speed (mbps)  (2015), and ACS Decennial Population (2010)',
-                                       'Microsoft - UVA DSPG transfer',
-                                       'Residential Fixed Internet Access Service Connections per 1000 Households by Census Tract (December 31,2015)', 
-                                       'Secondary Metric. Primary data sources are 2013-2017 American Community Survey  5-Year Estimates; B28002, Question 007 and 
-                                       Residential Fixed Internet Access Service Connections per 1000 Households by Census Tract (December 31,2015)', 
-                                       'FCC Form  477 (2015); ACS Decennial Population (2010)', 
-                                       'Secondary Metric. Primary data sources are 2013-2017 American Community Survey  5-Year Estimates; B28002, Question 007,
-                                       and Micsoft\'s Usage Metric'
+                            Source = c('2013-2017 American Community Survey 5-Year Estimates; Table B28002, Item 004', 
+                                       '2013-2017 American Community Survey 5-Year Estimates; Table B28002, Item 007',
+                                       'Federal Communications Commission Form 477 Residential Fixed Internet Access Service Connections per 1000 Households by Census Tract 
+                                       (December 31, 2015)', 
+                                       'Constructed Metric. Primary data sources are 2013-2017 American Community Survey 5-Year Estimates; Table B28002, Item 007 
+                                       and Federal Communications Commission Form 477 Residential Fixed Internet Access Service Connections per 1000 Households by Census Tract 
+                                       (December 31, 2015)', 
+                                       'Federal Communications Commission Form 477 (2015); Census Decennial Population (2010)', 
+                                       'Constructed Metric. Primary data sources are 2013-2017 American Community Survey 5-Year Estimates; Table B28002, Item 007,
+                                       Federal Communications Commission Form 477; Max Advertised Downstream Speed (mbps) (2015), and ACS Decennial Population (2010)',
+                                       '2013-2017 American Community Survey 5-Year Estimates; Table B28002, Item 004', 
+                                       '2013-2017 American Community Survey 5-Year Estimates; Table B28002, Item 007',
+                                       'Federal Communications Commission Form 477 Residential Fixed Internet Access Service Connections per 1000 Households by Census Tract 
+                                       (December 31, 2015)', 
+                                       'Constructed Metric. Primary data sources are 2013-2017 American Community Survey 5-Year Estimates; Table B28002, Item 007 
+                                       and Federal Communications Commission Form 477 Residential Fixed Internet Access Service Connections per 1000 Households by Census Tract 
+                                       (December 31, 2015)', 
+                                       'Federal Communications Commission Form 477 (2015); Census Decennial Population (2010)', 
+                                       'Constructed Metric. Primary data sources are 2013-2017 American Community Survey 5-Year Estimates; Table B28002, Item 007,
+                                       Federal Communications Commission Form 477; Max Advertised Downstream Speed (mbps) (2015), and Census Decennial Population (2010)',
+                                       'Microsoft Airband Initiative 2018 Broadband Usage Data',
+                                       'Federal Communications Commission Form 477 Residential Fixed Internet Access Service Connections per 1000 Households by Census Tract 
+                                       (December 31, 2015)', 
+                                       'Constructed Metric. Primary data sources are 2013-2017 American Community Survey 5-Year Estimates; Table B28002, Item 007 
+                                       and Federal Communications Commission Form 477 Residential Fixed Internet Access Service Connections per 1000 Households by Census Tract 
+                                       (December 31, 2015)', 
+                                       'Federal Communications Commission Form 477 (2015); Census Decennial Population (2010)', 
+                                       'Constructed Metric. Primary data sources are 2013-2017 American Community Survey 5-Year Estimates; Table B28002, Item 007,
+                                       and Microsoft Airband Initative Broadband Usage Data'
                                        
                             )
   )
@@ -563,7 +569,7 @@ ui <- fluidPage(
                               selectize = TRUE, width = NULL, size = NULL)
            ),
            column(3,
-                  selectInput("R_U", "Rural/Urban", c("Rural", "Urban", "All"), selected = 'All', multiple = FALSE,
+                  selectInput("R_U", "Select Urban Status", c("Rural", "Urban", "All"), selected = 'All', multiple = FALSE,
                               selectize = TRUE, width = NULL, size = NULL)
            )
   ),
