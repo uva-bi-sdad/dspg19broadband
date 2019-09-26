@@ -25,7 +25,7 @@ fcc_acs$fcc_acs_difference <- fcc_acs$availability_adv*100 - fcc_acs$B28002_007_
 # hist(fcc_acs$fcc_acs_difference) # predict this!
 
 # attach *other* ACS varaibles; we only have these at the County level, for now (but I had them by tract)
-acs_vars <- read.csv("~/git/DSPG Broadband/data/working/brookingsOLS/broadband_acs_by_census_tract_2015.csv")
+acs_vars <- read.csv("./data/working/brookingsOLS/broadband_acs_by_census_tract_2015.csv")
 # join to brookingsOLS/broadband_acs_by_census_tract_2015.csv
 fcc_acs$tract <- as.numeric(fcc_acs$tract)
 fcc_acs_final <- merge(fcc_acs, acs_vars, by.x = "tract", by.y = "GEOID") 
@@ -36,8 +36,9 @@ fcc_acs_final$fcc_acs_difference_subscription <- fcc_acs_final$subscription_cont
 rf_data <- fcc_acs_final %>% dplyr::select(
   difference_availability = fcc_acs_difference,
   difference_subscription = fcc_acs_difference_subscription,
-  availaibility = availability_adv,
+  availability = availability_adv,
   subscription = subscription_continuous,
+  acsbroadband = B28002_007_per,
   state = STATEFP,
   population,
   hs_or_less,

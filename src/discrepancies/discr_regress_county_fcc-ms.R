@@ -9,6 +9,7 @@ library(naniar)
 library(gridExtra)
 library(ggplot2)
 library(gbm)
+library(naniar)
 
 
 #
@@ -60,8 +61,8 @@ remove(ms_orig)
 sum(fcc$GEOID %in% acs$GEOID)
 discr <- left_join(fcc, acs, by = "GEOID")
 
-sum(ms$GEOID %in% discr$GEOID)
-discr <- left_join(discr, ms, by = "GEOID")
+sum(discr$GEOID %in% ms$GEOID)
+discr <- left_join(ms, discr, by = "GEOID")
 
 
 #
@@ -94,9 +95,19 @@ discr <- discr %>% mutate(dis_bin_fcc_ms = case_when(dis_rel_fcc_ms <= 0 ~ "[-26
 discr$dis_bin_fcc_ms <- ordered(discr$dis_bin_fcc_ms, levels = c("[-26, 0]", "(0, 20]", "(20, 40]",
                                                                  "(40, 60]", "(60, 80]", "(80, 100]"))
 
+
 # Missingness
-table(is.na(discr$dis_rel_fcc_ms))
+miss <- discr %>% select(availability_adv, usage, 
+                         dis_rel_fcc_ms, dis_cat_fcc_ms, dis_bin_fcc_ms,
+                         RUCC_2013, ru_binary, 
+                         hs_r_ls, poverty, ag_65_l, hispanc, black, density, family, foreign)
+table(is.na(miss$dis_rel_fcc_ms))
+
+miss_var_summary(miss)
+
+# Filter to observations with recorded outcome
 discr <- discr %>% filter(!is.na(dis_rel_fcc_ms))
+miss_var_summary(discr)
 
 # Plot
 hist(discr$dis_rel_fcc_ms)
