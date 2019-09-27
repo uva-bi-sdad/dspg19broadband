@@ -27,8 +27,18 @@ acsvars <- c("B15003_001","B15003_002","B15003_003","B15003_004","B15003_005","B
              "B03003_001","B03003_003",                                                                                            # hispanic, hispanic/total
              "B02001_001","B02001_003",                                                                                            # black, black/total
              "B09019_002","B09019_003",                                                                                            # family households, in family households/in households
-             "B05002_001","B05002_013")                                                                                            # foreign born, foreign/total
-
+             "B05002_001","B05002_013",                                                                                            # foreign born, foreign/total
+             "B08006_001","B08006_017",                                                                                            # works from home, workers from home / total -- 017 / 001
+             "B08303_001","B08303_008","B08303_009","B08303_010","B08303_011","B08303_012","B08303_013",                           # travel time to work, 30min+ / total (008 to 013 / 001)
+             "B19058_001","B19058_002",                                                                                            # households with public assistance or food stamps/snap, with support / total (002 / 001)
+             "B23025_001","B23025_002",                                                                                            # proportion in labor force / total (002 / 001)
+             "B25002_001","B25002_003",                                                                                            # proportion vacant housing units, vacant / total -- 003 / 001
+             "B25003_001","B25003_003",                                                                                            # proportion renters, renters  /total -- 003 / 001
+             "B25035_001",                                                                                                         # median year structure built
+             "B25071_001",                                                                                                         # median gross rent as percentage of HH income
+             "B28011_001", "B28011_008")                                                                                           # no internet access, no access / total (008 / 001)
+             
+             
 # Get county-level variables from ACS 2013-2017 (5-year)
 acs_est <- get_acs(geography = "county", state = state_fips[1], variables = acsvars, year = 2017, survey = "acs5", cache_table = TRUE, output = "wide", geometry = TRUE,
                    keep_geo_vars = TRUE)
@@ -72,8 +82,18 @@ acs_estimates <- acs_est2 %>% transmute(
   density = B01001_001E / area_sqmi,
   family = B09019_003E / B09019_002E,
   foreign = B05002_013E / B05002_001E,
+  workfromhome = B08006_017E / B08006_001E,     
+  longcommute = (B08303_008E + B08303_009E + B08303_010E + B08303_011E + B08303_012E + B08303_013E) / B08303_001E,
+  assistance = B19058_002E / B19058_001E,
+  laborforce = B23025_002E / B23025_001E,  
+  vacant = B25002_003E / B25002_001E,
+  renters = B25003_003E / B25003_001E,  
+  yearbuilt = B25035_001E,
+  rentburden = B25071_001E,
+  nointernet = B28011_008E / B28011_001E,
   geometry = geometry
 )
+
 
 
 #

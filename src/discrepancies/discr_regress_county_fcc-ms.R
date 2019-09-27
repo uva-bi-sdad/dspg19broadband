@@ -100,7 +100,8 @@ discr$dis_bin_fcc_ms <- ordered(discr$dis_bin_fcc_ms, levels = c("[-26, 0]", "(0
 miss <- discr %>% select(availability_adv, usage, 
                          dis_rel_fcc_ms, dis_cat_fcc_ms, dis_bin_fcc_ms,
                          RUCC_2013, ru_binary, are_sqm, popultn,
-                         hs_r_ls, poverty, ag_65_l, hispanc, black, density, family, foreign)
+                         hs_r_ls, poverty, ag_65_l, hispanc, black, density, family, foreign,
+                         wrkfrmh, lngcmmt, assstnc, labrfrc, vacant, renters, yearblt, rntbrdn, nontrnt)
 table(is.na(miss$dis_rel_fcc_ms))
 
 miss_var_summary(miss)
@@ -117,15 +118,23 @@ hist(discr$dis_rel_fcc_ms)
 # Prepare (regression) ---------------------------------------------------------------------------
 #
 
-# Select data
-data <- discr %>% select(dis_rel_fcc_ms, RUCC_2013, state, are_sqm, popultn, hs_r_ls, poverty, ag_65_l, hispanc, black, density, family, foreign)
 
+# Select data
+data <- discr %>% select(dis_rel_fcc_ms, RUCC_2013, state, are_sqm, popultn, hs_r_ls, poverty, ag_65_l, hispanc, black, density, family, foreign,
+                         wrkfrmh, lngcmmt, assstnc, labrfrc, vacant, renters, yearblt, rntbrdn, nontrnt)
+
+# Filter out if needed
+data <- data %>% filter(!is.na(yearblt), !is.na(rntbrdn))
+
+# Split
 data_rural <- discr %>%
               filter(ru_binary == "nonmetro") %>%
-              select(dis_rel_fcc_ms, RUCC_2013, state, are_sqm, popultn, hs_r_ls, poverty, ag_65_l, hispanc, black, density, family, foreign)
+              select(dis_rel_fcc_ms, RUCC_2013, state, are_sqm, popultn, hs_r_ls, poverty, ag_65_l, hispanc, black, density, family, foreign,
+                     wrkfrmh, lngcmmt, assstnc, labrfrc, vacant, renters, yearblt, rntbrdn, nontrnt)
 data_urban <- discr %>%
               filter(ru_binary == "metro") %>%
-              select(dis_rel_fcc_ms, RUCC_2013, state, are_sqm, popultn, hs_r_ls, poverty, ag_65_l, hispanc, black, density, family, foreign)
+              select(dis_rel_fcc_ms, RUCC_2013, state, are_sqm, popultn, hs_r_ls, poverty, ag_65_l, hispanc, black, density, family, foreign,
+                     wrkfrmh, lngcmmt, assstnc, labrfrc, vacant, renters, yearblt, rntbrdn, nontrnt)
 
 # Set seed
 set.seed(2410)
