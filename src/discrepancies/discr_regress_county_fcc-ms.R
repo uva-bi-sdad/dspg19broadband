@@ -793,7 +793,7 @@ accuracy <- sum(diag) / n # accuracy
 
 
 #
-# Linear model ------------------------------------------------------------------------------------------------
+# Linear model: all counties ------------------------------------------------------------------------------------------------
 #
 
 discr_m2 <- lm(dis_rel_fcc_ms ~ ., data = data_train)
@@ -813,3 +813,51 @@ ggplot(data = comparison, aes(x = dis_rel_fcc_ms, y = preds)) +
   coord_cartesian(xlim = c(0, 100), ylim = c(0, 100)) +
   labs(title = "Actual versus predicted predicted FCC-Microsoft discrepancy values (%)", x = "Actual FCC-Microsoft discrepancy (%)", 
        y = "Predicted FCC-Microsoft discrepancy (%)")
+
+
+#
+# Linear model: urban counties ------------------------------------------------------------------------------------------------
+#
+
+discr_m2 <- lm(dis_rel_fcc_ms ~ ., data = data_train_urban)
+
+# Predict
+preds <- predict(discr_m2, data_test_urban)
+preds <- data.frame(preds)
+
+comparison <- cbind(dis_rel_fcc_ms = data_test_urban$dis_rel_fcc_ms, preds = preds)
+comparison <- as.data.frame(comparison)
+head(comparison)
+
+# Plot actual versus predicted FCC-Microsoft discrepancy (in %)
+ggplot(data = comparison, aes(x = dis_rel_fcc_ms, y = preds)) + 
+  geom_point() + 
+  geom_abline(intercept = 0, slope = 1, colour = "red") +
+  coord_cartesian(xlim = c(0, 100), ylim = c(0, 100)) +
+  labs(title = "Actual versus predicted predicted FCC-Microsoft discrepancy values (%) [urban counties]", x = "Actual FCC-Microsoft discrepancy (%)", 
+       y = "Predicted FCC-Microsoft discrepancy (%)")
+
+
+#
+# Linear model: rural counties ------------------------------------------------------------------------------------------------
+#
+
+discr_m2 <- lm(dis_rel_fcc_ms ~ ., data = data_train_rural)
+
+# Predict
+preds <- predict(discr_m2, data_test_rural)
+preds <- data.frame(preds)
+
+comparison <- cbind(dis_rel_fcc_ms = data_test_rural$dis_rel_fcc_ms, preds = preds)
+comparison <- as.data.frame(comparison)
+head(comparison)
+
+# Plot actual versus predicted FCC-Microsoft discrepancy (in %)
+ggplot(data = comparison, aes(x = dis_rel_fcc_ms, y = preds)) + 
+  geom_point() + 
+  geom_abline(intercept = 0, slope = 1, colour = "red") +
+  coord_cartesian(xlim = c(0, 100), ylim = c(0, 100)) +
+  labs(title = "Actual versus predicted predicted FCC-Microsoft discrepancy values (%) [rural counties]", x = "Actual FCC-Microsoft discrepancy (%)", 
+       y = "Predicted FCC-Microsoft discrepancy (%)")
+
+
