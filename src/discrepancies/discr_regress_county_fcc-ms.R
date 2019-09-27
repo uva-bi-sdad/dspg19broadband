@@ -99,7 +99,7 @@ discr$dis_bin_fcc_ms <- ordered(discr$dis_bin_fcc_ms, levels = c("[-26, 0]", "(0
 # Missingness
 miss <- discr %>% select(availability_adv, usage, 
                          dis_rel_fcc_ms, dis_cat_fcc_ms, dis_bin_fcc_ms,
-                         RUCC_2013, ru_binary, 
+                         RUCC_2013, ru_binary, area_sqmi, population,
                          hs_r_ls, poverty, ag_65_l, hispanc, black, density, family, foreign)
 table(is.na(miss$dis_rel_fcc_ms))
 
@@ -118,14 +118,14 @@ hist(discr$dis_rel_fcc_ms)
 #
 
 # Select data
-data <- discr %>% select(dis_rel_fcc_ms, RUCC_2013, hs_r_ls, poverty, ag_65_l, hispanc, black, density, family, foreign)
+data <- discr %>% select(dis_rel_fcc_ms, RUCC_2013, state, area_sqmi, population, hs_r_ls, poverty, ag_65_l, hispanc, black, density, family, foreign)
 
 data_rural <- discr %>%
               filter(ru_binary == "nonmetro") %>%
-              select(dis_rel_fcc_ms, RUCC_2013, hs_r_ls, poverty, ag_65_l, hispanc, black, density, family, foreign)
+              select(dis_rel_fcc_ms, RUCC_2013, state, area_sqmi, population, hs_r_ls, poverty, ag_65_l, hispanc, black, density, family, foreign)
 data_urban <- discr %>%
               filter(ru_binary == "metro") %>%
-              select(dis_rel_fcc_ms, RUCC_2013, hs_r_ls, poverty, ag_65_l, hispanc, black, density, family, foreign)
+              select(dis_rel_fcc_ms, RUCC_2013, state, area_sqmi, population, hs_r_ls, poverty, ag_65_l, hispanc, black, density, family, foreign)
 
 # Set seed
 set.seed(2410)

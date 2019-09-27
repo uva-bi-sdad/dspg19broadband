@@ -60,6 +60,7 @@ acs_estimates <- acs_est2 %>% transmute(
   LSAD = LSAD,
   NAME.x = NAME.x,
   NAME.y = NAME.y,
+  area_sqmi = area_sqmi,
   population = B01001_001E,
   hs_or_less = (B15003_002E + B15003_003E + B15003_004E + B15003_005E + B15003_006E + B15003_007E + B15003_008E + B15003_009E + B15003_010E +
                   B15003_011E + B15003_012E + B15003_013E + B15003_014E + B15003_015E + B15003_016E + B15003_017E + B15003_018E) / B15003_001E,
@@ -80,11 +81,9 @@ acs_estimates <- acs_est2 %>% transmute(
 #
 
 # With geography
-st_write(acs_est2, "./data/working/acs_2013-17/raw/acs_2013-17_raw_county.shp", driver = "ESRI Shapefile")  # create to a shapefile 
 st_write(acs_estimates, "./data/working/acs_2013-17/calc/acs_2013-17_calc_count.shp", driver = "ESRI Shapefile")  # create to a shapefile 
 
 # Data only
-st_geometry(acs_est2) <- NULL
 st_geometry(acs_estimates) <- NULL
 
 write.csv(acs_est2, file = "./data/working/acs_2013-17/nogeo/acs_2013-17_raw_county.csv", row.names = F)
