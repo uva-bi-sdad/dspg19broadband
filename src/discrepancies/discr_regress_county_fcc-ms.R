@@ -99,7 +99,7 @@ discr$dis_bin_fcc_ms <- ordered(discr$dis_bin_fcc_ms, levels = c("[-26, 0]", "(0
 # Missingness
 miss <- discr %>% select(availability_adv, usage, 
                          dis_rel_fcc_ms, dis_cat_fcc_ms, dis_bin_fcc_ms,
-                         RUCC_2013, ru_binary, area_sqmi, population,
+                         RUCC_2013, ru_binary, are_sqm, popultn,
                          hs_r_ls, poverty, ag_65_l, hispanc, black, density, family, foreign)
 table(is.na(miss$dis_rel_fcc_ms))
 
@@ -118,14 +118,14 @@ hist(discr$dis_rel_fcc_ms)
 #
 
 # Select data
-data <- discr %>% select(dis_rel_fcc_ms, RUCC_2013, state, area_sqmi, population, hs_r_ls, poverty, ag_65_l, hispanc, black, density, family, foreign)
+data <- discr %>% select(dis_rel_fcc_ms, RUCC_2013, state, are_sqm, popultn, hs_r_ls, poverty, ag_65_l, hispanc, black, density, family, foreign)
 
 data_rural <- discr %>%
               filter(ru_binary == "nonmetro") %>%
-              select(dis_rel_fcc_ms, RUCC_2013, state, area_sqmi, population, hs_r_ls, poverty, ag_65_l, hispanc, black, density, family, foreign)
+              select(dis_rel_fcc_ms, RUCC_2013, state, are_sqm, popultn, hs_r_ls, poverty, ag_65_l, hispanc, black, density, family, foreign)
 data_urban <- discr %>%
               filter(ru_binary == "metro") %>%
-              select(dis_rel_fcc_ms, RUCC_2013, state, area_sqmi, population, hs_r_ls, poverty, ag_65_l, hispanc, black, density, family, foreign)
+              select(dis_rel_fcc_ms, RUCC_2013, state, are_sqm, popultn, hs_r_ls, poverty, ag_65_l, hispanc, black, density, family, foreign)
 
 # Set seed
 set.seed(2410)
@@ -479,11 +479,11 @@ data_test_rural <- testing(split_rural)
 
 
 #
-# Random forest regression: ALL ---------------------------------------------------------------------------
+# Random forest classification: ALL ---------------------------------------------------------------------------
 #
 
 # Sample model
-n_features <- length(setdiff(names(data_train), "dis_rel_fcc_ms"))
+n_features <- length(setdiff(names(data_train), "dis_bin_fcc_ms"))
 
 discr_m1 <- ranger(
   dis_bin_fcc_ms ~ ., 
@@ -583,11 +583,11 @@ q <- colsums / n # distribution of instances over the predicted classes
 accuracy <- sum(diag) / n # accuracy
 
 #
-# Random forest regression: URBAN ---------------------------------------------------------------------------
+# Random forest classification: URBAN ---------------------------------------------------------------------------
 #
 
 # Sample model
-n_features <- length(setdiff(names(data_train_urban), "dis_rel_fcc_ms"))
+n_features <- length(setdiff(names(data_train_urban), "dis_bin_fcc_ms"))
 
 discr_m1 <- ranger(
   dis_bin_fcc_ms ~ ., 
@@ -688,11 +688,11 @@ accuracy <- sum(diag) / n # accuracy
 
 
 #
-# Random forest regression: RURAL---------------------------------------------------------------------------
+# Random forest classification: RURAL---------------------------------------------------------------------------
 #
 
 # Sample model
-n_features <- length(setdiff(names(data_train_rural), "dis_rel_fcc_ms"))
+n_features <- length(setdiff(names(data_train_rural), "dis_bin_fcc_ms"))
 
 discr_m1 <- ranger(
   dis_bin_fcc_ms ~ ., 
@@ -790,29 +790,6 @@ colsums <- apply(confmatrix, 2, sum) # number of predictions per class
 p <- rowsums / n # distribution of instances over the actual classes
 q <- colsums / n # distribution of instances over the predicted classes
 accuracy <- sum(diag) / n # accuracy
-
-
-#
-# Linear model ------------------------------------------------------------------------------------------------
-#
-
-discr_m2 <- lm(dis_rel_fcc_ms ~ ., data = data_train)
-
-# Predict
-preds <- predict(discr_m2, data_test)
-preds <- data.frame(preds)
-
-comparison <- cbind(dis_rel_fcc_ms = data_test$dis_rel_fcc_ms, preds = preds)
-comparison <- as.data.frame(comparison)
-head(comparison)
-
-# Plot actual versus predicted FCC-Microsoft discrepancy (in %)
-ggplot(data = comparison, aes(x = dis_rel_fcc_ms, y = preds)) + 
-  geom_point() + 
-  geom_abline(intercept = 0, slope = 1, colour = "red") +
-  coord_cartesian(xlim = c(0, 100), ylim = c(0, 100)) +
-  labs(title = "Actual versus predicted predicted FCC-Microsoft discrepancy values (%)", x = "Actual FCC-Microsoft discrepancy (%)", 
-       y = "Predicted FCC-Microsoft discrepancy (%)")
 
 
 #
