@@ -1,11 +1,37 @@
 library(psych)
 
 # Get data from discr_regress_county_fcc-ms
-datadesc <- discr %>% select(availability_adv, usage, 
-                             dis_rel_fcc_ms, dis_cat_fcc_ms, dis_bin_fcc_ms,
+datadesc <- discr %>% filter(!is.na(yearblt), !is.na(rntbrdn)) %>%
+                      select(availability_adv, usage, dis_rel_fcc_ms,
                              RUCC_2013, ru_binary, 
-                             hs_r_ls, poverty, ag_65_l, hispanc, black, are_sqm, popultn, density, family, foreign,
-                             wrkfrmh, lngcmmt, assstnc, labrfrc, vacant, renters, yearblt, rntbrdn, nontrnt)
+                             hs_r_ls, poverty, ag_65_l, hispanc, black, are_sqm, popultn, density, 
+                             family, foreign,wrkfrmh, lngcmmt, assstnc, labrfrc, vacant, renters, yearblt, rntbrdn, nontrnt) %>%
+                      mutate(availability_adv = availability_adv, 
+                             usage = usage, 
+                             dis_rel_fcc_ms = dis_rel_fcc_ms,
+                             RUCC_2013 = RUCC_2013,
+                             ru_binary = ru_binary, 
+                             hs_r_ls = hs_r_ls*100, 
+                             poverty = poverty*100, 
+                             ag_65_l = ag_65_l*100, 
+                             hispanc = hispanc*100, 
+                             black = black*100, 
+                             are_sqm = are_sqm, 
+                             popultn = popultn,
+                             density = density, 
+                             family = family*100, 
+                             foreign = foreign*100,
+                             wrkfrmh = wrkfrmh*100, 
+                             lngcmmt = lngcmmt*100, 
+                             assstnc = assstnc*100, 
+                             labrfrc = labrfrc*100, 
+                             vacant = vacant*100, 
+                             renters = renters*100, 
+                             yearblt = yearblt,
+                             rntbrdn = rntbrdn, 
+                             nontrnt = nontrnt*100)
+
+
 
 describeBy(datadesc, digits = 2)
 describeBy(datadesc, datadesc$ru_binary, digits = 2)
