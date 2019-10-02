@@ -4,7 +4,8 @@ library(psych)
 datadesc <- discr %>% select(availability_adv, usage, 
                              dis_rel_fcc_ms, dis_cat_fcc_ms, dis_bin_fcc_ms,
                              RUCC_2013, ru_binary, 
-                             hs_r_ls, poverty, ag_65_l, hispanc, black, density, family, foreign)
+                             hs_r_ls, poverty, ag_65_l, hispanc, black, are_sqm, popultn, density, family, foreign,
+                             wrkfrmh, lngcmmt, assstnc, labrfrc, vacant, renters, yearblt, rntbrdn, nontrnt)
 
 describeBy(datadesc, digits = 2)
 describeBy(datadesc, datadesc$ru_binary, digits = 2)

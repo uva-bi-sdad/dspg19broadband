@@ -140,15 +140,15 @@ data_urban <- discr %>%
 set.seed(2410)
 
 # Split
-split <- initial_split(data, prop = 0.7)
+split <- initial_split(data, prop = 0.8)
 data_train <- training(split)
 data_test <- testing(split)
 
-split_urban <- initial_split(data_urban, prop = 0.7)
+split_urban <- initial_split(data_urban, prop = 0.8)
 data_train_urban <- training(split_urban)
 data_test_urban <- testing(split_urban)
 
-split_rural <- initial_split(data_rural, prop = 0.7)
+split_rural <- initial_split(data_rural, prop = 0.8)
 data_train_rural <- training(split_rural)
 data_test_rural <- testing(split_rural)
 
