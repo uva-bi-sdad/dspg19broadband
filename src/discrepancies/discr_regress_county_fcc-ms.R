@@ -122,7 +122,7 @@ hist(discr$usage)
 
 # Select data
 data <- discr %>% select(availability_adv, usage, RUCC_2013, ru_binary, state, landarea, popultn, hs_r_ls, poverty, ag_65_l, hispanc, black, family, foreign,
-                         wrkfrmh, lngcmmt, assstnc, labrfrc, vacant, renters, yearblt, rntbrdn)
+                         wrkfrmh, lngcmmt, assstnc, labrfrc, vacant, renters, yearblt, rntbrdn, nontrnt)
 
 # Filter out if needed
 miss_var_summary(data)
@@ -132,11 +132,11 @@ data <- data %>% filter(!is.na(yearblt), !is.na(rntbrdn))
 data_rural <- data %>%
               filter(ru_binary == "nonmetro") %>%
               select(availability_adv, usage, RUCC_2013, state, landarea, popultn, hs_r_ls, poverty, ag_65_l, hispanc, black, family, foreign,
-                     wrkfrmh, lngcmmt, assstnc, labrfrc, vacant, renters, yearblt, rntbrdn)
+                     wrkfrmh, lngcmmt, assstnc, labrfrc, vacant, renters, yearblt, rntbrdn, nontrnt)
 data_urban <- data %>%
               filter(ru_binary == "metro") %>%
               select(availability_adv, usage, RUCC_2013, state, landarea, popultn, hs_r_ls, poverty, ag_65_l, hispanc, black, family, foreign,
-                     wrkfrmh, lngcmmt, assstnc, labrfrc, vacant, renters, yearblt, rntbrdn)
+                     wrkfrmh, lngcmmt, assstnc, labrfrc, vacant, renters, yearblt, rntbrdn, nontrnt)
 data <- data %>% select(-ru_binary)
 
 # Set seed
@@ -216,10 +216,10 @@ hyper_grid %>%
 discr_m1perm <- ranger(
   availability_adv ~ ., 
   data = data_train,
-  num.trees = 260, 
+  num.trees = 273, 
   mtry = 8, 
-  min.node.size = 5.8, 
-  replace = TRUE, 
+  min.node.size = 7, 
+  replace = FALSE, 
   sample.fraction = 0.45, 
   importance = "permutation",
   seed = 2410
@@ -228,29 +228,32 @@ discr_m1perm <- ranger(
 discr_m1imp <- ranger(
   availability_adv ~ ., 
   data = data_train,
-  num.trees = 260, 
+  num.trees = 273, 
   mtry = 8, 
-  min.node.size = 5.8, 
-  replace = TRUE, 
+  min.node.size = 7, 
+  replace = FALSE, 
   sample.fraction = 0.45, 
   importance = "impurity",
   seed = 2410
 )
 
 p1 <- vip::vip(discr_m1perm, bar = FALSE) + ggtitle("RFR predicting FCC broadband coverage (all counties):\nPermutation-based variable importance") + 
-                                            scale_x_discrete("Variable", labels = c("Renters", "Social Assistance", "Age 65+", "Vacant properties",
-                                                                                    "In labor force", "Land area", "High school or less", "RUCC", "Population", 
+                                            scale_x_discrete("Variable", labels = c("Renters", "Social Assistance", "Vacant properties", "In labor force",
+                                                                                    "High school or less", "Land area", "RUCC", "No internet", "Population", 
                                                                                     "Microsoft usage")) +
                                             labs(caption = "")
 p2 <- vip::vip(discr_m1imp, bar = FALSE) + ggtitle("\nImpurity-based variable importance")  + 
-                                           scale_x_discrete(labels = c("Renters", "Social Assistance", "Long commute", "In labor force",
-                                                                                   "High school or less", "Land area", "RUCC", "Vacant properties", "Population", 
+                                           scale_x_discrete(labels = c("Renters", "Long commute", "In labor force", "High school or less",
+                                                                                   "RUCC", "Land area", "Vacant properties", "No internet", "Population", 
                                                                                    "Microsoft usage")) +
                                            labs(caption = "Note: RFR = Random forest regression. FCC = Federal Communications Commission.")
 counties_all_imp <- gridExtra::grid.arrange(p1, p2, nrow = 1)
+ggsave("./doc/discrepancies/counties_all_imp_perm.png", plot = p1, device = "png")
+ggsave("./doc/discrepancies/counties_all_imp_impur.png", plot = p2, device = "png")
 ggsave("./doc/discrepancies/counties_all_imp.png", plot = counties_all_imp, device = "png")
 
 importance_pvalues(discr_m1perm, method = "altmann", formula = availability_adv ~ ., data = data_train)
+importance_pvalues(discr_m1imp, method = "altmann", formula = availability_adv ~ ., data = data_train)
 
 # Predict
 preds <- predict(discr_m1perm, data_test)
@@ -332,11 +335,11 @@ hyper_grid %>%
 discr_m1perm <- ranger(
   availability_adv ~ ., 
   data = data_train_urban,
-  num.trees = 80, 
-  mtry = 8, 
-  min.node.size = 8.2, 
+  num.trees = 147, 
+  mtry = 6, 
+  min.node.size = 1, 
   replace = TRUE, 
-  sample.fraction = 0.45, 
+  sample.fraction = 0.85, 
   importance = "permutation",
   seed = 2410
 )
@@ -344,29 +347,32 @@ discr_m1perm <- ranger(
 discr_m1imp <- ranger(
   availability_adv ~ ., 
   data = data_train_urban,
-  num.trees = 80, 
-  mtry = 8, 
-  min.node.size = 8.2, 
+  num.trees = 147, 
+  mtry = 6, 
+  min.node.size = 1, 
   replace = TRUE, 
-  sample.fraction = 0.45, 
+  sample.fraction = 0.85, 
   importance = "impurity",
   seed = 2410
 )
 
 p1 <- vip::vip(discr_m1perm, bar = FALSE) + ggtitle("RFR predicting FCC broadband coverage (urban counties):\nPermutation-based variable importance") + 
-                                            scale_x_discrete("Variable", labels = c("Long commute", "Age 65+", "Land area", "Hispanic",
-                                                                                    "High school or less", "In labor force", "Foreign-born", "Vacant properties", "Population", 
+                                            scale_x_discrete("Variable", labels = c("Social assistance", "Long commute+", "Land area", "In labor force",
+                                                                                    "High school or less", "Vacant properties", "Foreign-born", "No internet", "Population", 
                                                                                     "Microsoft usage")) +
                                             labs(caption = "")
 p2 <- vip::vip(discr_m1imp, bar = FALSE) + ggtitle("\nImpurity-based variable importance")  + 
-                                           scale_x_discrete(labels = c("Hispanic", "Age 65+", "Renters", "Land area",
-                                                                        "In labor force", "Foreign-born", "High school or less", "Vacant properties", "Population", 
+                                           scale_x_discrete(labels = c("Renters", "Age 65+", "In labor force", "Land area",
+                                                                        "High school or less", "Foreign-born", "Vacant properties", "No internet", "Population", 
                                                                         "Microsoft usage")) +
                                            labs(caption = "Note: RFR = Random forest regression. FCC = Federal Communications Commission.")
 counties_urban_imp <- gridExtra::grid.arrange(p1, p2, nrow = 1)
+ggsave("./doc/discrepancies/counties_urban_imp_perm.png", plot = p1, device = "png")
+ggsave("./doc/discrepancies/counties_urban_imp_impur.png", plot = p2, device = "png")
 ggsave("./doc/discrepancies/counties_urban_imp.png", plot = counties_urban_imp, device = "png")
 
 importance_pvalues(discr_m1perm, method = "altmann", formula = availability_adv ~ ., data = data_train_urban)
+importance_pvalues(discr_m1imp, method = "altmann", formula = availability_adv ~ ., data = data_train_urban)
 
 # Predict
 preds <- predict(discr_m1perm, data_test_urban)
@@ -448,11 +454,11 @@ hyper_grid %>%
 discr_m1perm <- ranger(
   availability_adv ~ ., 
   data = data_train_rural,
-  num.trees = 260, 
+  num.trees = 273, 
   mtry = 8, 
   min.node.size = 4.6, 
-  replace = TRUE, 
-  sample.fraction = 0.85, 
+  replace = FALSE, 
+  sample.fraction = 0.45, 
   importance = "permutation",
   seed = 2410
 )
@@ -460,29 +466,32 @@ discr_m1perm <- ranger(
 discr_m1imp <- ranger(
   availability_adv ~ ., 
   data = data_train_rural,
-  num.trees = 260, 
+  num.trees = 273, 
   mtry = 8, 
   min.node.size = 4.6, 
-  replace = TRUE, 
-  sample.fraction = 0.85, 
+  replace = FALSE, 
+  sample.fraction = 0.45, 
   importance = "impurity",
   seed = 2410
 )
 
 p1 <- vip::vip(discr_m1perm, bar = FALSE) + ggtitle("RFR predicting FCC broadband coverage (rural counties):\nPermutation-based variable importance") + 
-                                            scale_x_discrete("Variable", labels = c("Rent burden", "State", "Vacant properties", "Social assistance",
-                                                                                    "In labor force", "RUCC", "High school or less", "Land area", "Population", 
+                                            scale_x_discrete("Variable", labels = c("Black", "In labor force", "Vacant properties", "Social assistance",
+                                                                                    "RUCC", "No internet", "High school or less", "Land area", "Population", 
                                                                                     "Microsoft usage")) +
                                             labs(caption = "")
 p2 <- vip::vip(discr_m1imp, bar = FALSE) + ggtitle("\nImpurity-based variable importance")  + 
-                                           scale_x_discrete(labels = c("Age 65+", "Workers from home", "Social assistance", "Long commute",
-                                                                        "In labor force", "High school or less", "Vacant properties", "Land area", "Population", 
+                                           scale_x_discrete(labels = c("Social assistance", "Long commute", "Age 65+", "In labor force",
+                                                                        "High school or less", "No internet", "Vacant properties", "Land area", "Population", 
                                                                         "Microsoft usage")) +
                                            labs(caption = "Note: RFR = Random forest regression. FCC = Federal Communications Commission.")
 counties_rural_imp <- gridExtra::grid.arrange(p1, p2, nrow = 1)
+ggsave("./doc/discrepancies/counties_rural_imp_perm.png", plot = p1, device = "png")
+ggsave("./doc/discrepancies/counties_rural_imp_impur.png", plot = p2, device = "png")
 ggsave("./doc/discrepancies/counties_rural_imp.png", plot = counties_rural_imp, device = "png")
 
 importance_pvalues(discr_m1perm, method = "altmann", formula = availability_adv ~ ., data = data_train_rural)
+importance_pvalues(discr_m1imp, method = "altmann", formula = availability_adv ~ ., data = data_train_rural)
 
 # Predict
 preds <- predict(discr_m1perm, data_test_rural)
