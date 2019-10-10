@@ -241,7 +241,7 @@ p1 <- vip::vip(discr_m1perm, bar = FALSE) + ggtitle("RFR predicting FCC broadban
                                             scale_x_discrete("Variable", labels = c("Renters", "Social Assistance", "Vacant properties", "In labor force",
                                                                                     "High school or less", "Land area", "RUCC", "No internet", "Population", 
                                                                                     "Microsoft usage")) +
-                                            labs(caption = "")
+                                            labs(caption = "Note: RFR = Random forest regression. FCC = Federal Communications Commission.")
 p2 <- vip::vip(discr_m1imp, bar = FALSE) + ggtitle("\nImpurity-based variable importance")  + 
                                            scale_x_discrete(labels = c("Renters", "Long commute", "In labor force", "High school or less",
                                                                                    "RUCC", "Land area", "Vacant properties", "No internet", "Population", 
@@ -360,7 +360,7 @@ p1 <- vip::vip(discr_m1perm, bar = FALSE) + ggtitle("RFR predicting FCC broadban
                                             scale_x_discrete("Variable", labels = c("Social assistance", "Long commute+", "Land area", "In labor force",
                                                                                     "High school or less", "Vacant properties", "Foreign-born", "No internet", "Population", 
                                                                                     "Microsoft usage")) +
-                                            labs(caption = "")
+                                            labs(caption = "Note: RFR = Random forest regression. FCC = Federal Communications Commission.")
 p2 <- vip::vip(discr_m1imp, bar = FALSE) + ggtitle("\nImpurity-based variable importance")  + 
                                            scale_x_discrete(labels = c("Renters", "Age 65+", "In labor force", "Land area",
                                                                         "High school or less", "Foreign-born", "Vacant properties", "No internet", "Population", 
@@ -479,7 +479,7 @@ p1 <- vip::vip(discr_m1perm, bar = FALSE) + ggtitle("RFR predicting FCC broadban
                                             scale_x_discrete("Variable", labels = c("Black", "In labor force", "Vacant properties", "Social assistance",
                                                                                     "RUCC", "No internet", "High school or less", "Land area", "Population", 
                                                                                     "Microsoft usage")) +
-                                            labs(caption = "")
+                                            labs(caption = "Note: RFR = Random forest regression. FCC = Federal Communications Commission.")
 p2 <- vip::vip(discr_m1imp, bar = FALSE) + ggtitle("\nImpurity-based variable importance")  + 
                                            scale_x_discrete(labels = c("Social assistance", "Long commute", "Age 65+", "In labor force",
                                                                         "High school or less", "No internet", "Vacant properties", "Land area", "Population", 
