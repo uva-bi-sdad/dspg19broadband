@@ -390,7 +390,7 @@ ggplot(data = comparison, aes(x = availability_adv, y = preds)) +
   geom_point(size = 1) + 
   labs(title = "Actual versus predicted FCC broadband availability (%) [urban counties]", x = "Actual FCC broadband availability (%)", 
        y = "Predicted FCC broadband availability (%)", caption = "Notes: FCC = Federal Communications Commission.\nRed line indicates perfect prediction.",
-       subtitle = "RMSE = 11.41%")+
+       subtitle = "RMSE = 11.41%") +
   theme_hc()
 ggsave("./doc/discrepancies/counties_urban_preds.png", plot = last_plot(), device = "png")
 
