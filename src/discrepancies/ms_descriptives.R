@@ -1,10 +1,8 @@
 library(psych)
 library(corrr)
 
-
-# It can also be called using the traditional method
-# network_plot(correlate(mydata), min_cor=0.5)
-# Get data from discr_regress_county_fcc-ms
+# FCC-MS
+# Get data from ms_models.R
 datadesc <- discr %>% filter(!is.na(yearblt), !is.na(rntbrdn)) %>%
                       select(availability_adv, usage, 
                              RUCC_2013, ru_binary, 
@@ -38,7 +36,7 @@ describeBy(datadesc, datadesc$ru_binary, digits = 2)
 
 datadesc %>% select(-ru_binary) %>% correlate() %>% network_plot(min_cor = 0.2)
 
-
+# FCC-ACS --> Josh has to update
 # Get data from predictFCC_ACS.R
 datadesc_acs <- rf_data_full %>% select(-state, -population) %>%
                                  mutate(availability = availability*100,
