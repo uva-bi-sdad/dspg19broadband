@@ -8,6 +8,8 @@ library(caret)
 library(naniar)
 library(gridExtra)
 library(ggplot2)
+library(ggthemes)
+library(viridis)
 library(naniar)
 
 
@@ -265,14 +267,13 @@ head(comparison)
 
 # Plot actual versus predicted FCC broadband availability (in %)
 ggplot(data = comparison, aes(x = availability_adv, y = preds)) + 
-  geom_point(size = 1) + 
-  geom_abline(intercept = 0, slope = 1, colour = "red") +
-  scale_x_continuous(limits = c(0, 100)) +
-  scale_y_continuous(limits = c(0, 100)) +
   coord_cartesian(xlim = c(0, 100), ylim = c(0, 100)) +
-  expand_limits(x = c(0, 100), y = c(0, 100)) +
+  geom_abline(intercept = 0, slope = 1, colour = "red") +
+  geom_point(size = 1) + 
   labs(title = "Actual versus predicted FCC broadband availability (%)", x = "Actual FCC broadband availability (%)", 
-       y = "Predicted FCC broadband availability (%)", caption = "Notes: FCC = Federal Communications Commission.\nRed line indicates perfect prediction.")
+       y = "Predicted FCC broadband availability (%)", caption = "Notes: FCC = Federal Communications Commission.\nRed line indicates perfect prediction.",
+       subtitle = "RMSE = 17.58%") +
+  theme_hc()
 ggsave("./doc/discrepancies/counties_all_preds.png", plot = last_plot(), device = "png")
 
 
@@ -384,14 +385,13 @@ head(comparison)
 
 # Plot actual versus predicted FCC broadband availability (in %)
 ggplot(data = comparison, aes(x = availability_adv, y = preds)) + 
-  geom_point(size = 1) + 
-  geom_abline(intercept = 0, slope = 1, colour = "red") +
-  scale_x_continuous(limits = c(0, 100)) +
-  scale_y_continuous(limits = c(0, 100)) +
   coord_cartesian(xlim = c(0, 100), ylim = c(0, 100)) +
-  expand_limits(x = c(0, 100), y = c(0, 100)) +
+  geom_abline(intercept = 0, slope = 1, colour = "red") +
+  geom_point(size = 1) + 
   labs(title = "Actual versus predicted FCC broadband availability (%) [urban counties]", x = "Actual FCC broadband availability (%)", 
-       y = "Predicted FCC broadband availability (%)", caption = "Notes: FCC = Federal Communications Commission.\nRed line indicates perfect prediction.")
+       y = "Predicted FCC broadband availability (%)", caption = "Notes: FCC = Federal Communications Commission.\nRed line indicates perfect prediction.",
+       subtitle = "RMSE = 11.41%")+
+  theme_hc()
 ggsave("./doc/discrepancies/counties_urban_preds.png", plot = last_plot(), device = "png")
 
 
@@ -503,14 +503,13 @@ head(comparison)
 
 # Plot actual versus predicted FCC broadband availability (in %)
 ggplot(data = comparison, aes(x = availability_adv, y = preds)) + 
-  geom_point(size = 1) + 
-  geom_abline(intercept = 0, slope = 1, colour = "red") +
-  scale_x_continuous(limits = c(0, 100)) +
-  scale_y_continuous(limits = c(0, 100)) +
   coord_cartesian(xlim = c(0, 100), ylim = c(0, 100)) +
-  expand_limits(x = c(0, 100), y = c(0, 100)) +
+  geom_abline(intercept = 0, slope = 1, colour = "red") +
+  geom_point(size = 1) + 
   labs(title = "Actual versus predicted FCC broadband availability (%) [rural counties]", x = "Actual FCC broadband availability (%)", 
-       y = "Predicted FCC broadband availability (%)", caption = "Notes: FCC = Federal Communications Commission.\nRed line indicates perfect prediction.")
+       y = "Predicted FCC broadband availability (%)", caption = "Notes: FCC = Federal Communications Commission.\nRed line indicates perfect prediction.",
+       subtitle = "RMSE = 20.21%") +
+  theme_hc()
 ggsave("./doc/discrepancies/counties_rural_preds.png", plot = last_plot(), device = "png")
 
 
