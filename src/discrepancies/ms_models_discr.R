@@ -225,16 +225,16 @@ discr_m1imp <- ranger(
   seed = 2410
 )
 
-p1 <- vip::vip(discr_m1perm, bar = FALSE) + ggtitle("RFR predicting FCC broadband coverage (all counties):\nPermutation-based variable importance") + 
-  scale_x_discrete("Variable", labels = c("Renters", "Social Assistance", "Vacant properties", "In labor force",
-                                          "High school or less", "Land area", "RUCC", "No internet", "Population", 
-                                          "Microsoft usage")) +
-  labs(caption = "Note: RFR = Random forest regression. FCC = Federal Communications Commission.")
+p1 <- vip::vip(discr_m1perm, bar = FALSE) + ggtitle("RFR predicting broadband coverage discrepancies (all counties):\nPermutation-based variable importance") + 
+  scale_x_discrete("Variable", labels = c("Workers from home", "In labor force", "In poverty", "Land area",
+                                          "Foreign-born", "Social assistance", "Vacant properties", "High school or less", "Population", 
+                                          "No internet")) +
+  labs(caption = "Note: RFR = Random forest regression.")
 p2 <- vip::vip(discr_m1imp, bar = FALSE) + ggtitle("\nImpurity-based variable importance")  + 
-  scale_x_discrete(labels = c("Renters", "Long commute", "In labor force", "High school or less",
-                              "RUCC", "Land area", "Vacant properties", "No internet", "Population", 
-                              "Microsoft usage")) +
-  labs(caption = "Note: RFR = Random forest regression. FCC = Federal Communications Commission.")
+  scale_x_discrete(labels = c("Family households", "In labor force", "Social assistance", "Workers from home",
+                              "Foreign-born", "High school or less", "Vacant properties", "Land area", "Population", 
+                              "No internet")) +
+  labs(caption = "Note: RFR = Random forest regression.")
 counties_all_imp <- gridExtra::grid.arrange(p1, p2, nrow = 1)
 ggsave("./doc/discrepancies/counties_all_discr_imp_perm.png", plot = p1, device = "png")
 ggsave("./doc/discrepancies/counties_all_discr_imp_impur.png", plot = p2, device = "png")
@@ -257,7 +257,7 @@ ggplot(data = comparison, aes(x = dis_rel_fcc_ms, y = preds)) +
   geom_abline(intercept = 0, slope = 1, colour = "red") +
   geom_point(size = 1) + 
   labs(title = "Actual versus predicted FCC-MS broadband coverage report discrepancy (%)", x = "Actual FCC-MS report discrepancy (%)", 
-       y = "Predicted FCC-MS report discrepancy availability (%)", caption = "Notes: FCC = Federal Communications Commission.\nRed line indicates perfect prediction.",
+       y = "Predicted FCC-MS report discrepancy (%)", caption = "Notes: FCC = Federal Communications Commission. MS = Microsoft.\nRed line indicates perfect prediction.",
        subtitle = "RMSE = 19.10%") +
   theme_hc()
 ggsave("./doc/discrepancies/counties_all_discr_preds.png", plot = last_plot(), device = "png")
@@ -343,15 +343,15 @@ discr_m1imp <- ranger(
   seed = 2410
 )
 
-p1 <- vip::vip(discr_m1perm, bar = FALSE) + ggtitle("RFR predicting FCC broadband coverage (urban counties):\nPermutation-based variable importance") + 
-  scale_x_discrete("Variable", labels = c("Social assistance", "Long commute+", "Land area", "In labor force",
-                                          "High school or less", "Vacant properties", "Foreign-born", "No internet", "Population", 
-                                          "Microsoft usage")) +
+p1 <- vip::vip(discr_m1perm, bar = FALSE) + ggtitle("RFR predicting broadband coverage discrepancies (urban counties):\nPermutation-based variable importance") + 
+  scale_x_discrete("Variable", labels = c("Renters", "In labor force", "Workers from home", "In poverty",
+                                          "Social assistance", "Hispanic", "Population", "High school or less", "No internet", 
+                                          "Foreign-born")) +
   labs(caption = "Note: RFR = Random forest regression. FCC = Federal Communications Commission.")
 p2 <- vip::vip(discr_m1imp, bar = FALSE) + ggtitle("\nImpurity-based variable importance")  + 
-  scale_x_discrete(labels = c("Renters", "Age 65+", "In labor force", "Land area",
-                              "High school or less", "Foreign-born", "Vacant properties", "No internet", "Population", 
-                              "Microsoft usage")) +
+  scale_x_discrete(labels = c("Vacant properties", "Land area", "In poverty", "Social assistance",
+                              "Workers from home", "Hispanic", "Population", "High school or less", "Foreign-born", 
+                              "No internet"))
   labs(caption = "Note: RFR = Random forest regression. FCC = Federal Communications Commission.")
 counties_urban_imp <- gridExtra::grid.arrange(p1, p2, nrow = 1)
 ggsave("./doc/discrepancies/counties_urban_discr_imp_perm.png", plot = p1, device = "png")
@@ -375,7 +375,7 @@ ggplot(data = comparison, aes(x = dis_rel_fcc_ms, y = preds)) +
   geom_abline(intercept = 0, slope = 1, colour = "red") +
   geom_point(size = 1) + 
   labs(title = "Actual versus predicted FCC-MS broadband coverage report discrepancy (%) [urban counties]", x = "Actual FCC-MS discrepancy (%)", 
-       y = "Predicted FCC-MS discrepancy (%)", caption = "Notes: FCC = Federal Communications Commission.\nRed line indicates perfect prediction.",
+       y = "Predicted FCC-MS discrepancy (%)", caption = "Notes: FCC = Federal Communications Commission. MS = Microsoft.\nRed line indicates perfect prediction.",
        subtitle = "RMSE = 14.45%") +
   theme_hc()
 ggsave("./doc/discrepancies/counties_urban_discr_preds.png", plot = last_plot(), device = "png")
@@ -461,15 +461,15 @@ discr_m1imp <- ranger(
   seed = 2410
 )
 
-p1 <- vip::vip(discr_m1perm, bar = FALSE) + ggtitle("RFR predicting FCC broadband coverage (rural counties):\nPermutation-based variable importance") + 
-  scale_x_discrete("Variable", labels = c("Black", "In labor force", "Vacant properties", "Social assistance",
-                                          "RUCC", "No internet", "High school or less", "Land area", "Population", 
-                                          "Microsoft usage")) +
+p1 <- vip::vip(discr_m1perm, bar = FALSE) + ggtitle("RFR predicting broadband coverage discrepancies(rural counties):\nPermutation-based variable importance") + 
+  scale_x_discrete("Variable", labels = c("Age 65+", "High school or less", "In labor force", "In poverty",
+                                          "No internet", "Black", "Social assistance", "Population", "Vacant properties", 
+                                          "Land area")) +
   labs(caption = "Note: RFR = Random forest regression. FCC = Federal Communications Commission.")
 p2 <- vip::vip(discr_m1imp, bar = FALSE) + ggtitle("\nImpurity-based variable importance")  + 
-  scale_x_discrete(labels = c("Social assistance", "Long commute", "Age 65+", "In labor force",
-                              "High school or less", "No internet", "Vacant properties", "Land area", "Population", 
-                              "Microsoft usage")) +
+  scale_x_discrete(labels = c("In labor force", "Social asssistance", "No internet", "Workers from home", 
+                              "Age 65+", "High school or less", "Long commute", "Population", "Vacant properties", 
+                              "Land area")) +
   labs(caption = "Note: RFR = Random forest regression. FCC = Federal Communications Commission.")
 counties_rural_imp <- gridExtra::grid.arrange(p1, p2, nrow = 1)
 ggsave("./doc/discrepancies/counties_rural_discr_imp_perm.png", plot = p1, device = "png")

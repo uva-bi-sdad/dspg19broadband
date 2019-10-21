@@ -4,12 +4,13 @@ library(corrr)
 # FCC-MS
 # Get data from ms_models.R
 datadesc <- discr %>% filter(!is.na(yearblt), !is.na(rntbrdn)) %>%
-                      select(availability_adv, usage, 
+                      select(availability_adv, usage, dis_rel_fcc_ms,
                              RUCC_2013, ru_binary, 
                              hs_r_ls, poverty, ag_65_l, hispanc, black, landarea, popultn, 
                              family, foreign,wrkfrmh, lngcmmt, assstnc, labrfrc, vacant, renters, yearblt, rntbrdn, nontrnt) %>%
                       mutate(availability_adv = availability_adv, 
                              usage = usage, 
+                             dis_rel_fcc_ms = dis_rel_fcc_ms,
                              RUCC_2013 = RUCC_2013,
                              ru_binary = ru_binary, 
                              hs_r_ls = hs_r_ls*100, 
