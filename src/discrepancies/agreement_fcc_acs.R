@@ -7,6 +7,10 @@ library(raster)
 library(dplyr)
 library(sf)
 library(readr)
+library(sf)
+library(ggplot2)
+library(ggthemes)
+library(scales)
 
 census_api_key("548d39e0315b591a0e9f5a8d9d6c1f22ea8fafe0") # Teja's key
 
@@ -35,7 +39,7 @@ for(i in 2:length(state_fips)){
 }
 
 # Calculate variables
-acs_ <- acs %>% transmute(
+acs <- acs %>% transmute(
   GEOID = GEOID,
   STATEFP = STATEFP,
   COUNTYFP = COUNTYFP,
@@ -82,3 +86,62 @@ fcc <- fcc %>% mutate(conn10min = case_when(pcat_10x1 == 0 ~ 0,
                                             pcat_10x1 == 3 ~ 600/1000,
                                             pcat_10x1 == 4 ~ 800/1000,
                                             pcat_10x1 == 5 ~ 1))
+
+
+#
+# Join FCC and ACS -------------------------------------------------------------------------------------------------------------
+#
+
+colnames(fcc)[colnames(fcc) == "tractcode"] <- "GEOID"
+data <- left_join(acs, fcc, by = "GEOID")
+
+head(data)
+
+
+#
+# Create indicators -------------------------------------------------------------------------------------------------------------
+#
+
+data <- data %>% mutate(iswithin0 = ifelse((bband >= conn10min & bband <= conn10max), 1, 0),
+                        iswithin5 = ifelse((bband >= (conn10min + (5*conn10min)/100) & bband <= (conn10max + (5*conn10max)/100)) & iswithin0 == 0, 1, 0), 
+                        iswithin15 = ifelse((bband >= (conn10min + (15*conn10min)/100) & bband <= (conn10max + (15*conn10max)/100)) & iswithin0 == 0 & iswithin5 == 0, 1, 0),
+                        iswithin20 = ifelse((bband >= (conn10min + (20*conn10min)/100) & bband <= (conn10max + (20*conn10max)/100)) & iswithin0 == 0 & iswithin5 == 0 & iswithin15 == 0, 1, 0),
+                        cats = case_when(iswithin0 == 1 & iswithin5 == 0 & iswithin15 == 0 & iswithin20 == 0 ~ "ACS within 0% FCC range",
+                                        iswithin0 == 0 & iswithin5 == 1 & iswithin15 == 0 & iswithin20 == 0 ~ "ACS within 5% FCC range",
+                                        iswithin0 == 0 & iswithin5 == 0 & iswithin15 == 1 & iswithin20 == 0 ~ "ACS within 15% FCC range",
+                                        iswithin0 == 0 & iswithin5 == 0 & iswithin15 == 0 & iswithin20 == 1 ~ "ACS within 20% FCC range",
+                                        iswithin0 == 0 & iswithin5 == 0 & iswithin15 == 0 & iswithin20 == 0 ~ "ACS outside FCC range"))
+data$cats <- factor(data$cats, levels = c("ACS within 0% FCC range", "ACS within 5% FCC range", "ACS within 15% FCC range", "ACS within 20% FCC range", "ACS outside FCC range"))
+
+head(data)
+
+table(data$cats, useNA = "always")
+table(data$cats, data$iswithin0)
+table(data$cats, data$iswithin5)
+table(data$cats, data$iswithin15)
+table(data$cats, data$iswithin20)
+
+
+#
+# Plot -------------------------------------------------------------------------------------------------------------
+#
+
+# Get viridis colors
+show_col(viridis_pal()(20))
+
+# Contiguous states only for now
+# 2 = Alaska, 15 = Hawaii, American Samoa = 60, Guam = 66, Mariana Islands = 69, Puerto Rico 72, Virgin Islands = 78
+# https://www.nrcs.usda.gov/wps/portal/nrcs/detail/?cid=nrcs143_013696
+
+contig <- data %>% filter(STATEFP != "02" & STATEFP != "15" & STATEFP != "60" & STATEFP != "66" & STATEFP != "69" & STATEFP != "72" & STATEFP != "78")
+
+# Plot contiguous states
+ggplot(data = contig) +
+  geom_sf(aes(fill = cats), size = 0.001) +
+  labs(title = "ACS and FCC broadband subscription estimate congruence by tract", 
+       caption = "Note: FCC = Federal Communications Commission, December 2015. ACS = American Community Survey, 2013-17.") +
+  theme_map() +
+  theme(plot.title = element_text(size = 16, face = "bold"),
+        legend.title = element_text(size = 11, face = "bold"),
+        legend.text = element_text(size = 11)) +
+  scale_fill_manual(name = "Match range", values = c("#FDE725", "#56C667", "#238A8D", "#3F4788", "#f0f0f0"))
