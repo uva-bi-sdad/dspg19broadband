@@ -7,6 +7,7 @@ library(raster)
 library(dplyr)
 library(sf)
 library(readr)
+library(readxl)
 library(sf)
 library(ggplot2)
 library(ggthemes)
@@ -96,6 +97,40 @@ colnames(fcc)[colnames(fcc) == "tractcode"] <- "GEOID"
 data <- left_join(acs, fcc, by = "GEOID")
 
 head(data)
+
+
+#
+# Add RUCA codes -------------------------------------------------------------------------------------------------------------
+#
+
+# Documentation: https://www.ers.usda.gov/data-products/rural-urban-commuting-area-codes/documentation/
+# 1	Metropolitan area core: primary flow within an urbanized area (UA)
+# 2	Metropolitan area high commuting: primary flow 30% or more to a UA
+# 3	Metropolitan area low commuting: primary flow 10% to 30% to a UA
+# 4	Micropolitan area core: primary flow within an urban cluster of 10,000 to 49,999 (large UC)
+# 5	Micropolitan high commuting: primary flow 30% or more to a large UC
+# 6	Micropolitan low commuting: primary flow 10% to 30% to a large UC
+# 7	Small town core: primary flow within an urban cluster of 2,500 to 9,999 (small UC)
+# 8	Small town high commuting: primary flow 30% or more to a small UC
+# 9	Small town low commuting: primary flow 10% to 30% to a small UC
+# 10	Rural areas: primary flow to a tract outside a UA or UC
+# 99	Not coded: Census tract has zero population and no rural-urban identifier information
+
+# Read in, skip row #1 because it is a note
+ruca <- read_excel("./data/original/ruca2010revised.xlsx", col_names = TRUE, progress = readxl_progress(), skip = 1)
+
+names(ruca)[1] <- "StateCounty"
+names(ruca)[2] <- "State"
+names(ruca)[3] <- "County"
+names(ruca)[4] <- "Tract"
+names(ruca)[5] <- "primRUCA"
+names(ruca)[6] <- "secRUCA"
+names(ruca)[7] <- "TractPop10"
+names(ruca)[8] <- "LandSqmile10"
+names(ruca)[9] <- "PopDens10"
+
+# Join
+data <- left_join(data, ruca, by = c("GEOID" = "Tract"))
 
 
 #
