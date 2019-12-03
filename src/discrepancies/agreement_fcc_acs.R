@@ -42,7 +42,8 @@ for(i in 2:length(state_fips)){
 
 # Calculate variable min & max (ACS defaults to 90% confidence interval)
 # For alternative CIs, see https://www.census.gov/content/dam/Census/programs-surveys/acs/guidance/training-presentations/20180418_MOE.pdf
-acs <- acs %>% mutate(bbandmin = (B28002_007E - B28002_001M) / B28002_001E,
+acs <- acs %>% mutate(bband = B28002_007E / B28002_001E,
+                      bbandmin = (B28002_007E - B28002_001M) / B28002_001E,
                       bbandmax = (B28002_007E + B28002_001M) / B28002_001E)
 
 
@@ -83,11 +84,14 @@ fcc <- fcc %>% mutate(conn10min = case_when(pcat_10x1 == 0 ~ 0,
 # Join FCC and ACS -------------------------------------------------------------------------------------------------------------
 #
 
-# How many FCC tracts are in ACS?
-sum(!is.element(fcc$tractcode, acs$GEOID))
-# 1053 FCC tracts do not have ACS information.
-sum(!is.element(acs$GEOID, fcc$tractcode))
-# 342 ACS tracts do not have FCC information.
+# How many FCC tracts are not in ACS and vice versa?
+sum(!is.element(fcc$tractcode, acs$GEOID)) # 1053 FCC tracts do not have ACS information.
+sum(!is.element(acs$GEOID, fcc$tractcode)) # 342 ACS tracts do not have FCC information.
+# 1053 + 342 = 1395 tracts are without both estimates.
+
+# How many tracts total in each dataset?
+nrow(acs) # 73056 tracts (of which 342 not in FCC)
+nrow(fcc) # 73767 tracts (of which 1053 not in ACS)
 
 # Join (full, see above)
 data <- full_join(acs, fcc, by = c("GEOID" = "tractcode"))
@@ -104,6 +108,8 @@ sum(is.na(data$bband))
 sum(is.na(data$conn10min))
 sum(is.na(data$conn10max))
 
+# Filter to ACS+FCC information available
+data <- data %>% filter(!is.na(bband) & !is.na(conn10min))
 
 #
 # Add RUCA codes -------------------------------------------------------------------------------------------------------------
@@ -135,14 +141,15 @@ names(ruca)[7] <- "TractPop10"
 names(ruca)[8] <- "LandSqmile10"
 names(ruca)[9] <- "PopDens10"
 
+# Number of tracts in RUCA
+nrow(ruca) # 74002 tracts
+
+# How many data tracts are not in RUCA and vice versa?
+sum(!is.element(data$GEOID, ruca$Tract)) # All data tracts are in RUCA.
+sum(!is.element(ruca$Tract, data$GEOID)) # 1788 RUCA tracts are not in data.
+
 # Join
 data <- left_join(data, ruca, by = c("GEOID" = "Tract"))
-
-# Note: 324 tracts are uncoded (99) in RUCA. 
-# A total of 25 tracts in AL, AZ, CA, NY, SD, and VA are missing a RUCA code. This may have to do with tract reassignments,
-# see https://www.census.gov/programs-surveys/acs/technical-documentation/table-and-geography-changes/2012/geography-changes.html).
-# test <- data %>% filter(is.na(primRUCA))
-# Dropping these tracts for now.
 
 # Add urbanicity indicator
 data <- data %>% mutate(urbanicity = case_when((primRUCA == 1 | primRUCA == 2 | primRUCA == 3) ~ "Metropolitan",
@@ -158,10 +165,10 @@ data$urbanicity <- factor(data$urbanicity, levels = c("Rural", "Small town", "Mi
 #
 
 # Both
-data <- data %>% mutate(iswithin0 = ifelse((bbandmin >= conn10min & bbandmax <= conn10max), 1, 0),
-                        iswithin5 = ifelse((bbandmin >= (conn10min + (5*conn10min)/100) & bbandmax <= (conn10max + (5*conn10max)/100)) & iswithin0 == 0, 1, 0), 
-                        iswithin10 = ifelse((bbandmin >= (conn10min + (10*conn10min)/100) & bbandmax <= (conn10max + (10*conn10max)/100)) & iswithin0 == 0 & iswithin5 == 0, 1, 0),
-                        iswithin15 = ifelse((bbandmin >= (conn10min + (15*conn10min)/100) & bbandmax <= (conn10max + (15*conn10max)/100)) & iswithin0 == 0 & iswithin5 == 0 & iswithin10 == 0, 1, 0),
+data <- data %>% mutate(iswithin0 = ifelse((bband >= conn10min & bband <= conn10max), 1, 0),
+                        iswithin5 = ifelse((bband >= (conn10min + (5*conn10min)/100) & bband <= (conn10max + (5*conn10max)/100)) & iswithin0 == 0, 1, 0), 
+                        iswithin10 = ifelse((bband >= (conn10min + (10*conn10min)/100) & bband <= (conn10max + (10*conn10max)/100)) & iswithin0 == 0 & iswithin5 == 0, 1, 0),
+                        iswithin15 = ifelse((bband >= (conn10min + (15*conn10min)/100) & bband <= (conn10max + (15*conn10max)/100)) & iswithin0 == 0 & iswithin5 == 0 & iswithin10 == 0, 1, 0),
                         cats = case_when(iswithin0 == 1 & iswithin5 == 0 & iswithin10 == 0 & iswithin15 == 0 ~ "ACS within exact FCC range",
                                         iswithin0 == 0 & iswithin5 == 1 & iswithin10 == 0 & iswithin15 == 0 ~ "ACS within 5% FCC range",
                                         iswithin0 == 0 & iswithin5 == 0 & iswithin10 == 1 & iswithin15 == 0 ~ "ACS within 10% FCC range",
@@ -179,25 +186,66 @@ table(data$cats, data$iswithin15)
 
 
 #
+# Split geography -------------------------------------------------------------------------------------------------------------
+#
+
+# 2 = Alaska, 15 = Hawaii, American Samoa = 60, Guam = 66, Mariana Islands = 69, Puerto Rico 72, Virgin Islands = 78
+# https://www.nrcs.usda.gov/wps/portal/nrcs/detail/?cid=nrcs143_013696
+
+# Contiguous states
+contig <- data %>% filter(STATEFP != "02" & STATEFP != "15" & STATEFP != "60" & STATEFP != "66" & STATEFP != "69" & STATEFP != "72" & STATEFP != "78")
+
+# Others
+alaska <- data %>% filter(STATEFP == "02")
+hawaii <- data %>% filter(STATEFP == "15")
+# Note: No American Samoa = 60, Guam = 66, Mariana Islands = 69, Puerto Rico 72, Virgin Islands = 78 in data.
+
+
+#
 # Plot -------------------------------------------------------------------------------------------------------------
 #
 
 # Get viridis colors
 show_col(viridis_pal()(20))
 
-# Contiguous states only for now
-# 2 = Alaska, 15 = Hawaii, American Samoa = 60, Guam = 66, Mariana Islands = 69, Puerto Rico 72, Virgin Islands = 78
-# https://www.nrcs.usda.gov/wps/portal/nrcs/detail/?cid=nrcs143_013696
-
-contig <- data %>% filter(STATEFP != "02" & STATEFP != "15" & STATEFP != "60" & STATEFP != "66" & STATEFP != "69" & STATEFP != "72" & STATEFP != "78")
-
 # Plot contiguous states
-ggplot(data = contig) +
+plot_main <- ggplot(data = contig) +
   geom_sf(aes(fill = cats), size = 0.001) +
-  labs(title = "ACS and FCC broadband subscription estimate congruence by tract", 
-       caption = "Note: FCC = Federal Communications Commission, December 2015. ACS = American Community Survey, 2013-17.") +
   theme_map() +
+  coord_sf(crs = st_crs(2163), xlim = c(-2500000, 2500000), ylim = c(-2300000, 730000)) +
+  labs(title = "ACS and FCC Broadband Subscription Estimate Congruence by Tract", 
+       caption = "Note: FCC = Federal Communications Commission, December 2015. ACS = American Community Survey, 2013-17.") +
+  scale_fill_manual(name = "Match range", values = c("#FDE725", "#56C667", "#238A8D", "#3F4788", "#f0f0f0")) +
   theme(plot.title = element_text(size = 16, face = "bold"),
-        legend.title = element_text(size = 11, face = "bold"),
-        legend.text = element_text(size = 11)) +
-  scale_fill_manual(name = "Match range", values = c("#FDE725", "#56C667", "#238A8D", "#3F4788", "#f0f0f0"))
+        legend.title = element_text(size = 10, face = "bold"),
+        legend.text = element_text(size = 10),
+        legend.position = "top")
+
+# Plot Hawaii
+plot_hawaii <- ggplot(data = hawaii) +
+  geom_sf(aes(fill = cats), size = 0.001)  +
+  theme_map() +
+  coord_sf(crs = st_crs(4135), xlim = c(-161, -154), ylim = c(18, 23), expand = FALSE) +
+  scale_fill_manual(name = "Match range", values = c("#FDE725", "#56C667", "#238A8D", "#3F4788", "#f0f0f0")) +
+  theme(legend.position = "none")
+
+# Plot Alaska
+plot_alaska <- ggplot(data = alaska) +
+  geom_sf(aes(fill = cats), size = 0.001) +
+  theme_map() +
+  coord_sf(crs = st_crs(3467), xlim = c(-2400000, 1600000), ylim = c(200000, 2500000), expand = FALSE) +
+  scale_fill_manual(name = "Match range", values = c("#FDE725", "#56C667", "#238A8D", "#3F4788", "#f0f0f0")) +
+  theme(legend.position = "none")
+
+# Plot all
+plot_main +
+  annotation_custom(grob = ggplotGrob(plot_alaska),
+    xmin = -2750000,
+    xmax = -2750000 + (1600000 - (-2400000))/2.5,
+    ymin = -2450000,
+    ymax = -2450000 + (2500000 - 200000)/2.5) +
+  annotation_custom(grob = ggplotGrob(plot_hawaii),
+    xmin = -1250000,
+    xmax = -1250000 + (-154 - (-161))*120000,
+    ymin = -2450000,
+    ymax = -2450000 + (23 - 18)*120000)
