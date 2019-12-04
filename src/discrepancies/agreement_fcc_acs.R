@@ -214,7 +214,7 @@ plot_main <- ggplot(data = contig) +
   theme_map() +
   coord_sf(crs = st_crs(2163), xlim = c(-2500000, 2500000), ylim = c(-2300000, 730000)) +
   labs(title = "ACS and FCC Broadband Subscription Estimate Congruence by Tract", 
-       caption = "Note: FCC = Federal Communications Commission, December 2015. ACS = American Community Survey, 2013-17.") +
+       caption = "Note: FCC = Federal Communications Commission, December 2015. ACS = American Community Survey, 2013-17.\nAlaska and Hawaii not to scale.") +
   scale_fill_manual(name = "Match range", values = c("#FDE725", "#56C667", "#238A8D", "#3F4788", "#f0f0f0")) +
   theme(plot.title = element_text(size = 16, face = "bold"),
         legend.title = element_text(size = 10, face = "bold"),
@@ -240,12 +240,12 @@ plot_alaska <- ggplot(data = alaska) +
 # Plot all
 plot_main +
   annotation_custom(grob = ggplotGrob(plot_alaska),
-    xmin = -2750000,
-    xmax = -2750000 + (1600000 - (-2400000))/2.5,
+    xmin = -3350000,
+    xmax = -3350000 + (1600000 - (-2400000))/1.8,
     ymin = -2450000,
-    ymax = -2450000 + (2500000 - 200000)/2.5) +
+    ymax = -2450000 + (2500000 - 200000)/1.8) +
   annotation_custom(grob = ggplotGrob(plot_hawaii),
-    xmin = -1250000,
-    xmax = -1250000 + (-154 - (-161))*120000,
+    xmin = -1700000,
+    xmax = -1700000 + (-154 - (-161))*230000,
     ymin = -2450000,
-    ymax = -2450000 + (23 - 18)*120000)
+    ymax = -2450000 + (23 - 18)*230000)
