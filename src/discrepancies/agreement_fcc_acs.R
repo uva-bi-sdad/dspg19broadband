@@ -13,6 +13,7 @@ library(ggplot2)
 library(ggthemes)
 library(scales)
 library(naniar)
+library(gridExtra)
 
 census_api_key("548d39e0315b591a0e9f5a8d9d6c1f22ea8fafe0") # Teja's key
 
@@ -249,3 +250,57 @@ plot_main +
     xmax = -1700000 + (-154 - (-161))*230000,
     ymin = -2450000,
     ymax = -2450000 + (23 - 18)*230000)
+
+
+#
+# Urbanicity -------------------------------------------------------------------------------------------------------------
+#
+
+table(data$cats, data$urbanicity, useNA = "always")
+round(prop.table(table(data$cats, data$urbanicity), margin = 2), 2)
+
+# Rural
+rural <- ggplot(data = contig[contig$urbanicity == "Rural", ]) +
+  geom_sf(aes(fill = cats), size = 0.001) +
+  theme_map() +
+  coord_sf(crs = st_crs(2163), xlim = c(-2500000, 2500000), ylim = c(-2300000, 730000)) +
+  labs(title = "Rural Tracts") +
+  scale_fill_manual(name = "Match range", values = c("#FDE725", "#56C667", "#238A8D", "#3F4788", "#f0f0f0")) +
+  theme(plot.title = element_text(size = 16, face = "bold"),
+        legend.title = element_text(size = 10, face = "bold"),
+        legend.text = element_text(size = 10),
+        legend.position = "top")
+
+# Small town
+small <- ggplot(data = contig[contig$urbanicity == "Small Town", ]) +
+  geom_sf(aes(fill = cats), size = 0.001) +
+  theme_map() +
+  coord_sf(crs = st_crs(2163), xlim = c(-2500000, 2500000), ylim = c(-2300000, 730000)) +
+  labs(title = "Small Town Tracts") +
+  scale_fill_manual(name = "Match range", values = c("#FDE725", "#56C667", "#238A8D", "#3F4788", "#f0f0f0")) +
+  theme(legend.position = "none")
+
+# Micropolitan
+micro <- ggplot(data = contig[contig$urbanicity == "Micropolitan", ]) +
+  geom_sf(aes(fill = cats), size = 0.001) +
+  theme_map() +
+  coord_sf(crs = st_crs(2163), xlim = c(-2500000, 2500000), ylim = c(-2300000, 730000)) +
+  labs(title = "Micropolitan Tracts") +
+  scale_fill_manual(name = "Match range", values = c("#FDE725", "#56C667", "#238A8D", "#3F4788", "#f0f0f0")) +
+  theme(plot.title = element_text(size = 16, face = "bold"),
+        legend.title = element_text(size = 10, face = "bold"),
+        legend.text = element_text(size = 10),
+        legend.position = "none")
+
+# Metropolitan
+metro <- ggplot(data = contig[contig$urbanicity == "Metropolitan", ]) +
+  geom_sf(aes(fill = cats), size = 0.001) +
+  theme_map() +
+  coord_sf(crs = st_crs(2163), xlim = c(-2500000, 2500000), ylim = c(-2300000, 730000)) +
+  labs(title = "Metropolitan Tracts") +
+  scale_fill_manual(name = "Match range", values = c("#FDE725", "#56C667", "#238A8D", "#3F4788", "#f0f0f0")) +
+  theme(legend.position = "none")
+
+# Arrange
+grid.arrange(rural, small, micro, metro, nrow = 2, top = "Tract-level ACS and FCC Broadband Subscription Estimate Congruence",
+             bottom = "Note: FCC = Federal Communications Commission, December 2015. ACS = American Community Survey, 2013-17.")
