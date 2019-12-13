@@ -5,7 +5,6 @@ library(acs)
 library(rgeos)
 library(raster)
 library(dplyr)
-library(sf)
 library(readr)
 library(readxl)
 library(sf)
@@ -13,7 +12,6 @@ library(ggplot2)
 library(ggthemes)
 library(scales)
 library(naniar)
-library(gridExtra)
 
 census_api_key("548d39e0315b591a0e9f5a8d9d6c1f22ea8fafe0") # Teja's key
 
@@ -78,7 +76,19 @@ fcc <- fcc %>% mutate(conn10min = case_when(pcat_10x1 == 0 ~ 0,
                                             pcat_10x1 == 2 ~ 400/1000,
                                             pcat_10x1 == 3 ~ 600/1000,
                                             pcat_10x1 == 4 ~ 800/1000,
-                                            pcat_10x1 == 5 ~ 1))
+                                            pcat_10x1 == 5 ~ 1),
+                      conn200min = case_when(pcat_all == 0 ~ 0,
+                                             pcat_all == 1 ~ 0,
+                                             pcat_all == 2 ~ 200/1000,
+                                             pcat_all == 3 ~ 400/1000,
+                                             pcat_all == 4 ~ 600/1000,
+                                             pcat_all == 5 ~ 800/1000),
+                      conn200max = case_when(pcat_all == 0 ~ 0,
+                                             pcat_all == 1 ~ 200/1000,
+                                             pcat_all == 2 ~ 400/1000,
+                                             pcat_all == 3 ~ 600/1000,
+                                             pcat_all == 4 ~ 800/1000,
+                                             pcat_all == 5 ~ 1))
 
 
 #
@@ -108,9 +118,12 @@ gg_miss_var(data)
 sum(is.na(data$bband))
 sum(is.na(data$conn10min))
 sum(is.na(data$conn10max))
+sum(is.na(data$conn200min))
+sum(is.na(data$conn200max))
 
 # Filter to ACS+FCC information available
 data <- data %>% filter(!is.na(bband) & !is.na(conn10min))
+
 
 #
 # Add RUCA codes -------------------------------------------------------------------------------------------------------------
