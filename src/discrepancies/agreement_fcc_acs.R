@@ -88,7 +88,9 @@ fcc <- fcc %>% mutate(conn10min = case_when(pcat_10x1 == 0 ~ 0,
                                              pcat_all == 2 ~ 400/1000,
                                              pcat_all == 3 ~ 600/1000,
                                              pcat_all == 4 ~ 800/1000,
-                                             pcat_all == 5 ~ 1))
+                                             pcat_all == 5 ~ 1),
+                      connmin = conn10min,
+                      connmax = conn200max)
 
 
 #
@@ -122,7 +124,7 @@ sum(is.na(data$conn200min))
 sum(is.na(data$conn200max))
 
 # Filter to ACS+FCC information available
-data <- data %>% filter(!is.na(bband) & !is.na(conn10min))
+data <- data %>% filter(!is.na(bband) & !is.na(connmin))
 
 
 #
@@ -172,7 +174,8 @@ data <- data %>% mutate(urbanicity = case_when((primRUCA == 1 | primRUCA == 2 | 
                                                (primRUCA == 10) ~ "Rural",
                                                (primRUCA == 99 | is.na(primRUCA)) ~ NA_character_))
 data$urbanicity <- factor(data$urbanicity, levels = c("Rural", "Small town", "Micropolitan", "Metropolitan"))
-                        
+         
+# Switch to intervals file here.               
 
 #
 # Create indicators -------------------------------------------------------------------------------------------------------------

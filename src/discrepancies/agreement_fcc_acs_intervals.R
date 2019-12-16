@@ -17,18 +17,25 @@ test_fcc10 <- data %>% select(conn10min, conn10max) %>%
 test_fcc200 <- data %>% select(conn200min, conn200max) %>% 
                         st_set_geometry(NULL)
 
-# Can only work with whole numbers
-startacs <- test_acs$bbandmin*100000
-endacs <- test_acs$bbandmax*100000
+test_fcc <- data %>% select(connmin, connmax) %>% 
+                        st_set_geometry(NULL)
+
+# Can only work with whole numbers (multiply to preserve all decimals)
+startacs <- test_acs$bbandmin*10000000
+endacs <- test_acs$bbandmax*10000000
 test_acs <- IRanges(start = startacs, end = endacs)
 
-startfcc10 <- test_fcc10$conn10min*100000
-endfcc10 <- test_fcc10$conn10max*100000
+startfcc10 <- test_fcc10$conn10min*10000000
+endfcc10 <- test_fcc10$conn10max*10000000
 test_fcc10 <- IRanges(start = startfcc10, end = endfcc10)
 
-startfcc200 <- test_fcc200$conn200min*100000
-endfcc200 <- test_fcc200$conn200max*100000
+startfcc200 <- test_fcc200$conn200min*10000000
+endfcc200 <- test_fcc200$conn200max*10000000
 test_fcc200 <- IRanges(start = startfcc200, end = endfcc200)
+
+startfcc <- test_fcc$connmin*10000000
+endfcc <- test_fcc$connmax*10000000
+test_fcc <- IRanges(start = startfcc, end = endfcc)
 
 # Test
 countOverlaps(test_acs[1], test_fcc10[1])
@@ -76,6 +83,15 @@ for(i in 2:length(test_acs@start)){
 names(overlap_acswithinfcc200)[1] <- "acs_within_fcc200"
 overlap_acswithinfcc200$acs_within_fcc200 <- as.factor(overlap_acswithinfcc200$acs_within_fcc200)
 
+# ACS is completely within FCC10min-FCC200max
+overlap_acswithinfcc <- as.data.frame(countOverlaps(test_acs[1], test_fcc[1]), type = "within")
+for(i in 2:length(test_acs@start)){
+  tmp <- countOverlaps(test_acs[i], test_fcc[i], type = "within")
+  overlap_acswithinfcc <- rbind(overlap_acswithinfcc, tmp)
+}
+names(overlap_acswithinfcc)[1] <- "acs_within_fcc"
+overlap_acswithinfcc$acs_within_fcc <- as.factor(overlap_acswithinfcc$acs_within_fcc)
+
 
 #
 # Put back -------------------------------------------------------------------------------------
@@ -86,7 +102,7 @@ overlap_geo <- as.data.frame(data$GEOID)
 names(overlap_geo)[1] <- "GEOID"
 overlap_geo$GEOID <- as.character(data$GEOID)
 
-overlap_df <- cbind(overlap_geo, overlap_acswithinfcc200, overlap_acswithinfcc10)
+overlap_df <- cbind(overlap_geo, overlap_acswithinfcc200, overlap_acswithinfcc10, overlap_acswithinfcc)
 
 # Create categorical variable
 overlap_df <- overlap_df %>% mutate(overlaptype = case_when(acs_within_fcc200 == 1 & acs_within_fcc10 == 0 ~ "Yes FCC 200kbps & No FCC 10mbps",
@@ -110,11 +126,11 @@ data_int <- data_int %>% mutate(urban_fcc200 = case_when(acs_within_fcc200 == 0 
                                                          acs_within_fcc10 == 1 & urbanicity == "Small town" ~ "Small town", 
                                                          acs_within_fcc10 == 1 & urbanicity == "Micropolitan" ~ "Micropolitan", 
                                                          acs_within_fcc10 == 1 & urbanicity == "Metropolitan" ~ "Metropolitan"),
-                                urban_any = case_when((acs_within_fcc200 == 0 & acs_within_fcc10 == 0) ~ NA_character_,
-                                                      (acs_within_fcc200 == 1 | acs_within_fcc10 == 1) & urbanicity == "Rural" ~ "Rural", 
-                                                      (acs_within_fcc200 == 1 | acs_within_fcc10 == 1) & urbanicity == "Small town" ~ "Small town", 
-                                                      (acs_within_fcc200 == 1 | acs_within_fcc10 == 1) & urbanicity == "Micropolitan" ~ "Micropolitan", 
-                                                      (acs_within_fcc200 == 1 | acs_within_fcc10 == 1) & urbanicity == "Metropolitan" ~ "Metropolitan"))
+                                urban_any = case_when(acs_within_fcc == 0 ~ NA_character_,
+                                                      acs_within_fcc == 1 & urbanicity == "Rural" ~ "Rural", 
+                                                      acs_within_fcc == 1 & urbanicity == "Small town" ~ "Small town", 
+                                                      acs_within_fcc == 1 & urbanicity == "Micropolitan" ~ "Micropolitan", 
+                                                      acs_within_fcc == 1 & urbanicity == "Metropolitan" ~ "Metropolitan"))
 data_int$urban_fcc200 <- factor(data_int$urban_fcc200, levels = c("Rural", "Small town", "Micropolitan", "Metropolitan"))
 data_int$urban_fcc10 <- factor(data_int$urban_fcc10, levels = c("Rural", "Small town", "Micropolitan", "Metropolitan"))
 data_int$urban_any <- factor(data_int$urban_any, levels = c("Rural", "Small town", "Micropolitan", "Metropolitan"))
@@ -139,7 +155,7 @@ plot_main <- ggplot() +
   theme_map() +
   coord_sf(crs = st_crs(2163), xlim = c(-2500000, 2500000), ylim = c(-2300000, 730000)) +
   labs(title = "ACS and FCC Broadband Subscription Estimate Congruence by Tract", 
-       subtitle = "Tracts with ACS estimates incongruent with either the FCC 200kbps or the FCC 10mbps range shown in grey.",
+       subtitle = "Tracts with incongruent estimate ranges shown in grey.",
        caption = "Note: FCC = Federal Communications Commission, December 2015. ACS = American Community Survey, 2013-17.\nAlaska and Hawaii not to scale.") +
   scale_fill_manual(name = "Urbanicity", values = c("#fed98e", "#fe9929", "#d95f0e", "#993404"), na.value = "#f0f0f0") +
   theme(plot.title = element_text(size = 16, face = "bold"),
