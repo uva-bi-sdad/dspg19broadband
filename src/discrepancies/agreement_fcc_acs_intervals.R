@@ -117,7 +117,7 @@ data_int <- data_int %>% mutate(urban_fcc200 = case_when(acs_within_fcc200 == 0 
                                                       (acs_within_fcc200 == 1 | acs_within_fcc10 == 1) & urbanicity == "Metropolitan" ~ "Metropolitan"))
 data_int$urban_fcc200 <- factor(data_int$urban_fcc200, levels = c("Rural", "Small town", "Micropolitan", "Metropolitan"))
 data_int$urban_fcc10 <- factor(data_int$urban_fcc10, levels = c("Rural", "Small town", "Micropolitan", "Metropolitan"))
-data_int$urban_any <- factor(data_int$urban_fcc10, levels = c("Rural", "Small town", "Micropolitan", "Metropolitan"))
+data_int$urban_any <- factor(data_int$urban_any, levels = c("Rural", "Small town", "Micropolitan", "Metropolitan"))
 
 
 #
@@ -134,8 +134,8 @@ int_hawaii <- data_int %>% filter(STATEFP == "15")
 #
 
 # Plot contiguous states
-plot_main <- ggplot(data = int_contig) +
-  geom_sf(aes(fill = urban_any), size = 0.001) +
+plot_main <- ggplot() +
+  geom_sf(data = int_contig, aes(fill = urban_any), size = 0.001) +
   theme_map() +
   coord_sf(crs = st_crs(2163), xlim = c(-2500000, 2500000), ylim = c(-2300000, 730000)) +
   labs(title = "ACS and FCC Broadband Subscription Estimate Congruence by Tract", 
@@ -148,16 +148,16 @@ plot_main <- ggplot(data = int_contig) +
         legend.position = "top")
 
 # Plot Hawaii
-plot_hawaii <- ggplot(data = int_hawaii) +
-  geom_sf(aes(fill = urban_any), size = 0.001)  +
+plot_hawaii <- ggplot() +
+  geom_sf(data = int_hawaii, aes(fill = urban_any), size = 0.001)  +
   theme_map() +
   coord_sf(crs = st_crs(4135), xlim = c(-161, -154), ylim = c(18, 23), expand = FALSE) +
   scale_fill_manual(name = "Urbanicity", values = c("#fed98e", "#fe9929", "#d95f0e", "#993404"), na.value = "#f0f0f0") +
   theme(legend.position = "none")
 
 # Plot Alaska
-plot_alaska <- ggplot(data = int_alaska) +
-  geom_sf(aes(fill = urban_any), size = 0.001) +
+plot_alaska <- ggplot() +
+  geom_sf(data = int_alaska, aes(fill = urban_any), size = 0.001) +
   theme_map() +
   coord_sf(crs = st_crs(3467), xlim = c(-2400000, 1600000), ylim = c(200000, 2500000), expand = FALSE) +
   scale_fill_manual(name = "Urbanicity", values = c("#fed98e", "#fe9929", "#d95f0e", "#993404"), na.value = "#f0f0f0") +
@@ -182,8 +182,8 @@ plot_main +
 #
 
 # Plot contiguous states
-plot_main <- ggplot(data = int_contig) +
-  geom_sf(aes(fill = urban_fcc200), size = 0.001) +
+plot_main <- ggplot() +
+  geom_sf(data = int_contig, aes(fill = urban_fcc200), size = 0.001) +
   theme_map() +
   coord_sf(crs = st_crs(2163), xlim = c(-2500000, 2500000), ylim = c(-2300000, 730000)) +
   labs(title = "ACS and FCC 200kbps Broadband Subscription Estimate Congruence by Tract", 
@@ -196,16 +196,16 @@ plot_main <- ggplot(data = int_contig) +
         legend.position = "top")
 
 # Plot Hawaii
-plot_hawaii <- ggplot(data = int_hawaii) +
-  geom_sf(aes(fill = urban_fcc200), size = 0.001)  +
+plot_hawaii <- ggplot() +
+  geom_sf(data = int_hawaii, aes(fill = urban_fcc200), size = 0.001)  +
   theme_map() +
   coord_sf(crs = st_crs(4135), xlim = c(-161, -154), ylim = c(18, 23), expand = FALSE) +
   scale_fill_manual(name = "Urbanicity", values = c("#fed98e", "#fe9929", "#d95f0e", "#993404"), na.value = "#f0f0f0") +
   theme(legend.position = "none")
 
 # Plot Alaska
-plot_alaska <- ggplot(data = int_alaska) +
-  geom_sf(aes(fill = urban_fcc200), size = 0.001) +
+plot_alaska <- ggplot() +
+  geom_sf(data = int_alaska, aes(fill = urban_fcc200), size = 0.001) +
   theme_map() +
   coord_sf(crs = st_crs(3467), xlim = c(-2400000, 1600000), ylim = c(200000, 2500000), expand = FALSE) +
   scale_fill_manual(name = "Urbanicity", values = c("#fed98e", "#fe9929", "#d95f0e", "#993404"), na.value = "#f0f0f0") +
@@ -230,8 +230,8 @@ plot_main +
 #
 
 # Plot contiguous states
-plot_main <- ggplot(data = int_contig) +
-  geom_sf(aes(fill = urban_fcc10), size = 0.001) +
+plot_main <- ggplot() +
+  geom_sf(data = int_contig, aes(fill = urban_fcc10), size = 0.001) +
   theme_map() +
   coord_sf(crs = st_crs(2163), xlim = c(-2500000, 2500000), ylim = c(-2300000, 730000)) +
   labs(title = "ACS and FCC 10mbps Broadband Subscription Estimate Congruence by Tract", 
@@ -244,16 +244,16 @@ plot_main <- ggplot(data = int_contig) +
         legend.position = "top")
 
 # Plot Hawaii
-plot_hawaii <- ggplot(data = int_hawaii) +
-  geom_sf(aes(fill = urban_fcc10), size = 0.001)  +
+plot_hawaii <- ggplot() +
+  geom_sf(data = int_hawaii, aes(fill = urban_fcc10), size = 0.001)  +
   theme_map() +
   coord_sf(crs = st_crs(4135), xlim = c(-161, -154), ylim = c(18, 23), expand = FALSE) +
   scale_fill_manual(name = "Urbanicity", values = c("#fed98e", "#fe9929", "#d95f0e", "#993404"), na.value = "#f0f0f0") +
   theme(legend.position = "none")
 
 # Plot Alaska
-plot_alaska <- ggplot(data = int_alaska) +
-  geom_sf(aes(fill = urban_fcc10), size = 0.001) +
+plot_alaska <- ggplot() +
+  geom_sf(data = int_alaska, aes(fill = urban_fcc10), size = 0.001) +
   theme_map() +
   coord_sf(crs = st_crs(3467), xlim = c(-2400000, 1600000), ylim = c(200000, 2500000), expand = FALSE) +
   scale_fill_manual(name = "Urbanicity", values = c("#fed98e", "#fe9929", "#d95f0e", "#993404"), na.value = "#f0f0f0") +
