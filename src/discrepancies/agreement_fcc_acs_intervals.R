@@ -109,9 +109,15 @@ data_int <- data_int %>% mutate(urban_fcc200 = case_when(acs_within_fcc200 == 0 
                                                          acs_within_fcc10 == 1 & urbanicity == "Rural" ~ "Rural", 
                                                          acs_within_fcc10 == 1 & urbanicity == "Small town" ~ "Small town", 
                                                          acs_within_fcc10 == 1 & urbanicity == "Micropolitan" ~ "Micropolitan", 
-                                                         acs_within_fcc10 == 1 & urbanicity == "Metropolitan" ~ "Metropolitan"))
+                                                         acs_within_fcc10 == 1 & urbanicity == "Metropolitan" ~ "Metropolitan"),
+                                urban_any = case_when((acs_within_fcc200 == 0 & acs_within_fcc10 == 0) ~ NA_character_,
+                                                      (acs_within_fcc200 == 1 | acs_within_fcc10 == 1) & urbanicity == "Rural" ~ "Rural", 
+                                                      (acs_within_fcc200 == 1 | acs_within_fcc10 == 1) & urbanicity == "Small town" ~ "Small town", 
+                                                      (acs_within_fcc200 == 1 | acs_within_fcc10 == 1) & urbanicity == "Micropolitan" ~ "Micropolitan", 
+                                                      (acs_within_fcc200 == 1 | acs_within_fcc10 == 1) & urbanicity == "Metropolitan" ~ "Metropolitan"))
 data_int$urban_fcc200 <- factor(data_int$urban_fcc200, levels = c("Rural", "Small town", "Micropolitan", "Metropolitan"))
 data_int$urban_fcc10 <- factor(data_int$urban_fcc10, levels = c("Rural", "Small town", "Micropolitan", "Metropolitan"))
+data_int$urban_any <- factor(data_int$urban_fcc10, levels = c("Rural", "Small town", "Micropolitan", "Metropolitan"))
 
 
 #
@@ -124,17 +130,18 @@ int_hawaii <- data_int %>% filter(STATEFP == "15")
 
 
 #
-# Plot: OVERLAP TYPE -------------------------------------------------------------------------------------
+# Plot: ANY OVERLAP (either 200 or 10) -------------------------------------------------------------------------------------
 #
 
 # Plot contiguous states
 plot_main <- ggplot(data = int_contig) +
-  geom_sf(aes(fill = overlaptype), size = 0.001) +
+  geom_sf(aes(fill = urban_any), size = 0.001) +
   theme_map() +
   coord_sf(crs = st_crs(2163), xlim = c(-2500000, 2500000), ylim = c(-2300000, 730000)) +
   labs(title = "ACS and FCC Broadband Subscription Estimate Congruence by Tract", 
+       subtitle = "Tracts with ACS estimates incongruent with either the FCC 200kbps or the FCC 10mbps range shown in grey.",
        caption = "Note: FCC = Federal Communications Commission, December 2015. ACS = American Community Survey, 2013-17.\nAlaska and Hawaii not to scale.") +
-  scale_discrete_manual(aesthetics = "fill", name = "Overlap type", values = c("#002A64", "#53596C", "#908B79", "#f0f0f0")) +
+  scale_fill_manual(name = "Urbanicity", values = c("#fed98e", "#fe9929", "#d95f0e", "#993404"), na.value = "#f0f0f0") +
   theme(plot.title = element_text(size = 16, face = "bold"),
         legend.title = element_text(size = 10, face = "bold"),
         legend.text = element_text(size = 10),
@@ -142,18 +149,18 @@ plot_main <- ggplot(data = int_contig) +
 
 # Plot Hawaii
 plot_hawaii <- ggplot(data = int_hawaii) +
-  geom_sf(aes(fill = overlaptype), size = 0.001)  +
+  geom_sf(aes(fill = urban_any), size = 0.001)  +
   theme_map() +
   coord_sf(crs = st_crs(4135), xlim = c(-161, -154), ylim = c(18, 23), expand = FALSE) +
-  scale_discrete_manual(aesthetics = "fill", name = "Overlap type", values = c("#002A64", "#53596C", "#908B79", "#f0f0f0")) +
+  scale_fill_manual(name = "Urbanicity", values = c("#fed98e", "#fe9929", "#d95f0e", "#993404"), na.value = "#f0f0f0") +
   theme(legend.position = "none")
 
 # Plot Alaska
 plot_alaska <- ggplot(data = int_alaska) +
-  geom_sf(aes(fill = overlaptype), size = 0.001) +
+  geom_sf(aes(fill = urban_any), size = 0.001) +
   theme_map() +
   coord_sf(crs = st_crs(3467), xlim = c(-2400000, 1600000), ylim = c(200000, 2500000), expand = FALSE) +
-  scale_discrete_manual(aesthetics = "fill", name = "Overlap type", values = c("#002A64", "#53596C", "#908B79", "#f0f0f0")) +
+  scale_fill_manual(name = "Urbanicity", values = c("#fed98e", "#fe9929", "#d95f0e", "#993404"), na.value = "#f0f0f0") +
   theme(legend.position = "none")
 
 # Plot all
@@ -180,8 +187,9 @@ plot_main <- ggplot(data = int_contig) +
   theme_map() +
   coord_sf(crs = st_crs(2163), xlim = c(-2500000, 2500000), ylim = c(-2300000, 730000)) +
   labs(title = "ACS and FCC 200kbps Broadband Subscription Estimate Congruence by Tract", 
+       subtitle = "Tracts with ACS estimates incongruent with the FCC 200kbps range shown in grey.",
        caption = "Note: FCC = Federal Communications Commission, December 2015. ACS = American Community Survey, 2013-17.\nAlaska and Hawaii not to scale.") +
-  scale_fill_manual(name = "Urbanicity", values = c("#E69F00", "#56B4E9", "#009E73", "#F0E442"), na.value = "#f0f0f0") +
+  scale_fill_manual(name = "Urbanicity", values = c("#fed98e", "#fe9929", "#d95f0e", "#993404"), na.value = "#f0f0f0") +
   theme(plot.title = element_text(size = 16, face = "bold"),
         legend.title = element_text(size = 10, face = "bold"),
         legend.text = element_text(size = 10),
@@ -192,7 +200,7 @@ plot_hawaii <- ggplot(data = int_hawaii) +
   geom_sf(aes(fill = urban_fcc200), size = 0.001)  +
   theme_map() +
   coord_sf(crs = st_crs(4135), xlim = c(-161, -154), ylim = c(18, 23), expand = FALSE) +
-  scale_fill_manual(name = "Urbanicity", values = c("#E69F00", "#56B4E9", "#009E73", "#F0E442"), na.value = "#f0f0f0") +
+  scale_fill_manual(name = "Urbanicity", values = c("#fed98e", "#fe9929", "#d95f0e", "#993404"), na.value = "#f0f0f0") +
   theme(legend.position = "none")
 
 # Plot Alaska
@@ -200,7 +208,7 @@ plot_alaska <- ggplot(data = int_alaska) +
   geom_sf(aes(fill = urban_fcc200), size = 0.001) +
   theme_map() +
   coord_sf(crs = st_crs(3467), xlim = c(-2400000, 1600000), ylim = c(200000, 2500000), expand = FALSE) +
-  scale_fill_manual(name = "Urbanicity", values = c("#E69F00", "#56B4E9", "#009E73", "#F0E442"), na.value = "#f0f0f0") +
+  scale_fill_manual(name = "Urbanicity", values = c("#fed98e", "#fe9929", "#d95f0e", "#993404"), na.value = "#f0f0f0") +
   theme(legend.position = "none")
 
 # Plot all
@@ -227,8 +235,9 @@ plot_main <- ggplot(data = int_contig) +
   theme_map() +
   coord_sf(crs = st_crs(2163), xlim = c(-2500000, 2500000), ylim = c(-2300000, 730000)) +
   labs(title = "ACS and FCC 10mbps Broadband Subscription Estimate Congruence by Tract", 
+       subtitle = "Tracts with ACS estimates incongruent with the FCC 10mbps range shown in grey.",
        caption = "Note: FCC = Federal Communications Commission, December 2015. ACS = American Community Survey, 2013-17.\nAlaska and Hawaii not to scale.") +
-  scale_fill_manual(name = "Urbanicity", values = c("#E69F00", "#56B4E9", "#009E73", "#F0E442"), na.value = "#f0f0f0") +
+  scale_fill_manual(name = "Urbanicity", values = c("#fed98e", "#fe9929", "#d95f0e", "#993404"), na.value = "#f0f0f0") +
   theme(plot.title = element_text(size = 16, face = "bold"),
         legend.title = element_text(size = 10, face = "bold"),
         legend.text = element_text(size = 10),
@@ -239,7 +248,7 @@ plot_hawaii <- ggplot(data = int_hawaii) +
   geom_sf(aes(fill = urban_fcc10), size = 0.001)  +
   theme_map() +
   coord_sf(crs = st_crs(4135), xlim = c(-161, -154), ylim = c(18, 23), expand = FALSE) +
-  scale_fill_manual(name = "Urbanicity", values = c("#E69F00", "#56B4E9", "#009E73", "#F0E442"), na.value = "#f0f0f0") +
+  scale_fill_manual(name = "Urbanicity", values = c("#fed98e", "#fe9929", "#d95f0e", "#993404"), na.value = "#f0f0f0") +
   theme(legend.position = "none")
 
 # Plot Alaska
@@ -247,7 +256,7 @@ plot_alaska <- ggplot(data = int_alaska) +
   geom_sf(aes(fill = urban_fcc10), size = 0.001) +
   theme_map() +
   coord_sf(crs = st_crs(3467), xlim = c(-2400000, 1600000), ylim = c(200000, 2500000), expand = FALSE) +
-  scale_fill_manual(name = "Urbanicity", values = c("#E69F00", "#56B4E9", "#009E73", "#F0E442"), na.value = "#f0f0f0") +
+  scale_fill_manual(name = "Urbanicity", values = c("#fed98e", "#fe9929", "#d95f0e", "#993404"), na.value = "#f0f0f0") +
   theme(legend.position = "none")
 
 # Plot all
