@@ -135,6 +135,7 @@ data_int$urban_fcc200 <- factor(data_int$urban_fcc200, levels = c("Rural", "Smal
 data_int$urban_fcc10 <- factor(data_int$urban_fcc10, levels = c("Rural", "Small town", "Micropolitan", "Metropolitan"))
 data_int$urban_any <- factor(data_int$urban_any, levels = c("Rural", "Small town", "Micropolitan", "Metropolitan"))
 
+# write_rds(data_int, "./data/working/intervals/data_int.Rds")
 
 #
 # Select data -------------------------------------------------------------------------------------
@@ -143,6 +144,27 @@ data_int$urban_any <- factor(data_int$urban_any, levels = c("Rural", "Small town
 int_contig <- data_int %>% filter(STATEFP != "02" & STATEFP != "15" & STATEFP != "60" & STATEFP != "66" & STATEFP != "69" & STATEFP != "72" & STATEFP != "78")
 int_alaska <- data_int %>% filter(STATEFP == "02")
 int_hawaii <- data_int %>% filter(STATEFP == "15")
+
+# Save for Shiny
+# int_alaska_save <- int_alaska %>% select(STATEFP, COUNTYFP, TRACTCE, GEOID, NAME.x, NAME.y, 
+#                                          bband, bbandmin, bbandmax, conn10min, conn10max, conn200min, 
+#                                          conn200max, connmin, connmax, primRUCA, TractPop10, LandSqmile10, 
+#                                          PopDens10, urbanicity, acs_within_fcc200, acs_within_fcc10, 
+#                                          acs_within_fcc, geometry, urban_fcc200, urban_fcc10, urban_any)
+# int_hawaii_save <- int_hawaii %>% select(STATEFP, COUNTYFP, TRACTCE, GEOID, NAME.x, NAME.y, 
+#                                          bband, bbandmin, bbandmax, conn10min, conn10max, conn200min, 
+#                                          conn200max, connmin, connmax, primRUCA, TractPop10, LandSqmile10, 
+#                                          PopDens10, urbanicity, acs_within_fcc200, acs_within_fcc10, 
+#                                          acs_within_fcc, geometry, urban_fcc200, urban_fcc10, urban_any)
+# int_contig_save <- int_contig %>% select(STATEFP, COUNTYFP, TRACTCE, GEOID, NAME.x, NAME.y, 
+#                                          bband, bbandmin, bbandmax, conn10min, conn10max, conn200min, 
+#                                          conn200max, connmin, connmax, primRUCA, TractPop10, LandSqmile10, 
+#                                          PopDens10, urbanicity, acs_within_fcc200, acs_within_fcc10, 
+#                                          acs_within_fcc, geometry, urban_fcc200, urban_fcc10, urban_any)
+# 
+# saveRDS(int_alaska_save, file = "./src/discrepancies/agreementapp/data/alaska.Rds")
+# saveRDS(int_hawaii_save, file = "./src/discrepancies/agreementapp/data/hawaii.Rds")
+# saveRDS(int_contig_save, file = "./src/discrepancies/agreementapp/data/contig.Rds")
 
 
 #
@@ -287,3 +309,54 @@ plot_main +
                     xmax = -1700000 + (-154 - (-161))*230000,
                     ymin = -2450000,
                     ymax = -2450000 + (23 - 18)*230000)
+
+#
+# Check urbanicity ------------------------------------------------------------------
+#
+
+# Urbanicity of min10 - max200 congruence
+table(data_int$acs_within_fcc)
+table(data_int$acs_within_fcc, data_int$urbanicity)
+round(prop.table(table(data_int$acs_within_fcc, data_int$urbanicity)), 4)
+
+round(prop.table(table(data_int$urbanicity, data_int$acs_within_fcc), margin = 2), 4)
+round(prop.table(table(data_int$urbanicity, data_int$acs_within_fcc), margin = 1), 4)
+
+# States with the highest proportion of congruent tracts
+statesmax <- data_int %>% mutate(acs_within_fcc = as.numeric(acs_within_fcc),
+                                 acs_within_fcc = acs_within_fcc - 1) %>%
+                          group_by(State) %>% 
+                          transmute(NAME.y = NAME.y,
+                                    acs_within_fcc = acs_within_fcc,
+                                    tractnumber = n(),
+                                    tractcong = sum(acs_within_fcc),
+                                    tractcongprop = tractcong/tractnumber) %>%
+                          st_set_geometry(NULL)
+statesmax <- statesmax %>% select(State, tractcongprop) %>% 
+                           unique() %>%
+                           arrange(desc(tractcongprop))
+head(statesmax, 10)
+tail(statesmax, 10)
+
+# Counties with the highest proportion of congruent tracts
+countiesmax <- data_int %>% mutate(acs_within_fcc = as.numeric(acs_within_fcc),
+                                 acs_within_fcc = acs_within_fcc - 1) %>%
+  group_by(County) %>% 
+  transmute(State = State,
+            acs_within_fcc = acs_within_fcc,
+            tractnumber = n(),
+            tractcong = sum(acs_within_fcc),
+            tractcongprop = tractcong/tractnumber) %>%
+  st_set_geometry(NULL)
+countiesmax <- countiesmax %>% select(State, County, tractcongprop) %>% 
+  unique()
+
+countiesmax <- countiesmax %>% group_by(State) %>%
+                               mutate(countiesnumber = n()) %>%
+                               ungroup() %>%
+                               arrange(desc(tractcongprop))
+
+ggplot(countiesmax, aes(x = tractcongprop)) +
+  geom_histogram(bins = 15) +
+  labs(title = "Histogram of proportion congruent tracts within counties", x = "Proportion congruent tracts", y = "Number of counties") +
+  scale_y_continuous(breaks = seq(0, 550, 50))
