@@ -168,7 +168,7 @@ int_hawaii <- data_int %>% filter(STATEFP == "15")
 
 
 #
-# Plot: ANY OVERLAP (either 200 or 10) -------------------------------------------------------------------------------------
+# Plot: ANY OVERLAP [min10, max200] -------------------------------------------------------------------------------------
 #
 
 # Plot contiguous states
@@ -176,7 +176,7 @@ plot_main <- ggplot() +
   geom_sf(data = int_contig, aes(fill = urban_any), size = 0.001) +
   theme_map() +
   coord_sf(crs = st_crs(2163), xlim = c(-2500000, 2500000), ylim = c(-2300000, 730000)) +
-  labs(title = "ACS and FCC Broadband Subscription Estimate Congruence by Tract", 
+  labs(title = "ACS and FCC Broadband Subscription Estimate Congruence by Tract [min10mbps, max200kbps]", 
        subtitle = "Tracts with incongruent estimate ranges shown in grey.",
        caption = "Note: FCC = Federal Communications Commission, December 2015. ACS = American Community Survey, 2013-17.\nAlaska and Hawaii not to scale.") +
   scale_fill_manual(name = "Urbanicity", values = c("#fed98e", "#fe9929", "#d95f0e", "#993404"), na.value = "#f0f0f0") +
@@ -310,9 +310,12 @@ plot_main +
                     ymin = -2450000,
                     ymax = -2450000 + (23 - 18)*230000)
 
+
 #
 # Check urbanicity ------------------------------------------------------------------
 #
+
+# Urbanicity not coded for 84 tracts
 
 # Urbanicity of min10 - max200 congruence
 table(data_int$acs_within_fcc)
@@ -360,3 +363,42 @@ ggplot(countiesmax, aes(x = tractcongprop)) +
   geom_histogram(bins = 15) +
   labs(title = "Histogram of proportion congruent tracts within counties", x = "Proportion congruent tracts", y = "Number of counties") +
   scale_y_continuous(breaks = seq(0, 550, 50))
+
+# Which counties are made up 100% by tracts with congruent estimates? Which states are they in?
+countiesmax_1 <- countiesmax %>% 
+                    filter(tractcongprop == 1) %>%
+                    group_by(State) %>%
+                    mutate(nperstate = n())  %>%
+                    ungroup() %>%
+                    arrange(desc(nperstate))
+
+countiesmax_1_table <- countiesmax_1 %>% select(State, nperstate) %>% unique()
+
+# Looks like some of these are counties that are also only 1 census tract.
+
+# Check in original data. Texas, Concho County
+test <- data_int %>% filter(State == "TX" & County == "Concho County")
+test <- data_int %>% filter(str_detect(NAME.y, "Concho"))
+
+test <- data_int %>% filter(str_detect(NAME.y, "Brewster"))
+
+
+#
+# Check width of ACS intervals ------------------------------------------------------------------
+#
+
+# Distribution of ACS-MOE
+hist(data_int[data_int$urbanicity == "Rural", ]$bbandmin, freq = TRUE, breaks = 10)
+hist(data_int[data_int$urbanicity == "Small town", ]$bbandmin, freq = TRUE, breaks = 10)
+hist(data_int[data_int$urbanicity == "Micropolitan", ]$bbandmin, freq = TRUE, breaks = 10)
+hist(data_int[data_int$urbanicity == "Metropolitan", ]$bbandmin, freq = TRUE, breaks = 10)
+
+# Distance btween ACS-MOE, ACS+MOE
+data_int$bbanddist <- data_int$bbandmax - data_int$bbandmin
+
+hist(data_int[data_int$urbanicity == "Rural", ]$bbanddist, freq = TRUE)
+hist(data_int[data_int$urbanicity == "Small town", ]$bbanddist, freq = TRUE)
+hist(data_int[data_int$urbanicity == "Micropolitan", ]$bbanddist, freq = TRUE)
+hist(data_int[data_int$urbanicity == "Metropolitan", ]$bbanddist, freq = TRUE)
+
+test <- data_int %>% select(NAME.y, bbandmin, bbandmax, bbanddist, urbanicity, connmin, connmax, acs_within_fcc)

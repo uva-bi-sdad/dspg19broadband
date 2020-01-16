@@ -1,9 +1,5 @@
-library(rgdal)
 library(tidycensus)
-library(tigris)
 library(acs)
-library(rgeos)
-library(raster)
 library(dplyr)
 library(readr)
 library(readxl)
@@ -41,9 +37,15 @@ for(i in 2:length(state_fips)){
 
 # Calculate variable min & max (ACS defaults to 90% confidence interval)
 # For alternative CIs, see https://www.census.gov/content/dam/Census/programs-surveys/acs/guidance/training-presentations/20180418_MOE.pdf
-acs <- acs %>% mutate(bband = B28002_007E / B28002_001E,
-                      bbandmin = (B28002_007E - B28002_001M) / B28002_001E,
-                      bbandmax = (B28002_007E + B28002_001M) / B28002_001E)
+
+# NOTE: There are 816 tracts with estimated 0 households (MOE ~10). Here, I use MOE as the number of households. 
+acs <- acs %>% mutate(bband = ifelse(B28002_001E > 0, (B28002_007E / B28002_001E), (B28002_007M / B28002_001M)),
+                      bbandmin = ifelse(B28002_001E > 0, ((B28002_007E - B28002_001M) / B28002_001E), 0),
+                      bbandmax = ifelse(B28002_001E > 0, ((B28002_007E + B28002_001M) / B28002_001E), (B28002_007M /B28002_001M)))
+# Bottom-code where bbandmin<0 since coverage cannot be below 0. 288 cases.
+acs <- acs %>% mutate(bbandmin = ifelse(bbandmin < 0, 0, bbandmin))
+# Top-code where bbandmax>1 since coverage cannot be above 1. 700 cases.
+acs <- acs %>% mutate(bbandmax = ifelse(bbandmax > 1, 1, bbandmax))
 
 
 #
@@ -162,7 +164,7 @@ nrow(ruca) # 74002 tracts
 
 # How many data tracts are not in RUCA and vice versa?
 sum(!is.element(data$GEOID, ruca$Tract)) # All data tracts are in RUCA.
-sum(!is.element(ruca$Tract, data$GEOID)) # 1788 RUCA tracts are not in data.
+sum(!is.element(ruca$Tract, data$GEOID)) # 1288 RUCA tracts are not in data.
 
 # Join
 data <- left_join(data, ruca, by = c("GEOID" = "Tract"))
