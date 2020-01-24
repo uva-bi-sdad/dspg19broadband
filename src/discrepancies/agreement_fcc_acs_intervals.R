@@ -396,9 +396,15 @@ hist(data_int[data_int$urbanicity == "Metropolitan", ]$bbandmin, freq = TRUE, br
 # Distance btween ACS-MOE, ACS+MOE
 data_int$bbanddist <- data_int$bbandmax - data_int$bbandmin
 
-hist(data_int[data_int$urbanicity == "Rural", ]$bbanddist, freq = TRUE)
-hist(data_int[data_int$urbanicity == "Small town", ]$bbanddist, freq = TRUE)
-hist(data_int[data_int$urbanicity == "Micropolitan", ]$bbanddist, freq = TRUE)
-hist(data_int[data_int$urbanicity == "Metropolitan", ]$bbanddist, freq = TRUE)
+hist(data_int[data_int$urbanicity == "Rural", ]$bbanddist, freq = TRUE, breaks = 10)
+hist(data_int[data_int$urbanicity == "Small town", ]$bbanddist, freq = TRUE, breaks = 10)
+hist(data_int[data_int$urbanicity == "Micropolitan", ]$bbanddist, freq = TRUE, breaks = 10)
+hist(data_int[data_int$urbanicity == "Metropolitan", ]$bbanddist, freq = TRUE, breaks = 10)
+
+summary(data_int[data_int$urbanicity == "Rural", ]$bbanddist)
+summary(data_int[data_int$urbanicity == "Small town", ]$bbanddist)
+summary(data_int[data_int$urbanicity == "Micropolitan", ]$bbanddist)
+summary(data_int[data_int$urbanicity == "Metropolitan", ]$bbanddist)
+
 
 test <- data_int %>% select(NAME.y, bbandmin, bbandmax, bbanddist, urbanicity, connmin, connmax, acs_within_fcc)
