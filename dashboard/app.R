@@ -371,32 +371,37 @@ ui <- fluidPage(
   #shinythemes::themeSelector(),
   #theme = "bootstrap.css",
   title = "Comparing US Broadband Availability, Subscription, and Usage",
-  
+  headerPanel(img(src = 'logo.png', class = 'topimage', width = '20%', style = 'display: block; margin-left: auto; margin-right: auto;')),
   fluidRow(width = 12, 
-           column(2, align = "center", img(src = 'logo.png', class = 'topimage', width = "100%")
-                  ),
-           column(10, align = "center", h1(strong('US Broadband Coverage Discrepancy Map')))
+           column(12, align = 'center', h1(strong('US Broadband Coverage Discrepancy Map')))
   ),
   hr(),
   fluidRow(width = 12,
            column(1),
            column(10,
-                  br('This dashboard was created as part of the Data Science for Public Good program in the Social and Decision Analytics Division of the Biocomplexity Institute and Initiative
+                  em('This dashboard was created as part of the Data Science for Public Good program in the Social and Decision Analytics Division of the Biocomplexity Institute and Initiative
                       at the University of Virginia, in partnership with the United States Department of Agriculture Economic Research Service.'),
                   p(),
                   br('Internet at broadband speeds—defined as 25mbps download and 3mbps upload—is still not available to many Americans. However, estimates differ on how many individuals are 
-               without access to broadband and thus limited in their ability to participate in today’s increasingly online world. To better understand US broadband coverage and where 
-               estimates disagree, our Data Science for Public Good team set out to examine three publicly available broadband data sources: the Federal Communications Commission (FCC)
-               data, American Community Survey (ACS) data, and Microsoft Airband Initiative data. Our aims were to understand the extent of coverage according to each dataset, to examine 
-               discrepancies between the ACS and Microsoft with FCC data as the source used for policy and funding decision-making, and to address both aims with particular attention to rural areas.')
+                     without access to broadband and thus limited in their ability to participate in today’s increasingly online world. To better understand US broadband coverage and where 
+                     estimates disagree, our Data Science for Public Good team set out to examine three publicly available broadband data sources: the Federal Communications Commission (FCC)
+                     data, American Community Survey (ACS) data, and Microsoft (MS) Airband Initiative data. Our aims were to understand the extent of coverage according to each dataset, to examine 
+                     discrepancies between the ACS and Microsoft with FCC data as the source used for policy and funding decision-making, and to address these aims with particular attention to rural areas.'),
+                  p(),
+                  br('This dashboard visualizes discrepancies between FCC-reported broadband availability and ACS-reported broadband subscription at census block group and census tract levels,
+                     and the discrepancies between FCC-reported broadband availability and MS-reported broadband usage at the county level. Using the map selector allows filtering by state,
+                     level of geography, and urban status. Hovering over each area on the resulting map displays information about the geography, land area, population, urban status, and broadband coverage.
+                     Detailed descriptions of our data sources and measures are available below.'),
+                  p(),
+                  br('[Once the Sage brief is published, we will link to it here.]')
             ),
            column(1)
   ),
   hr(),
-  fluidRow(width = 12,
+  fluidRow(width = 12, style = "margin: 20px",
            h2('Data Sources and Key Measures')
   ),
-  fluidRow(
+  fluidRow(style = "margin: 6px",
     column(3, wellPanel(strong('Federal Communications Commission (FCC): Broadband Availability'), 
                         p(),
                         em('Description.'),
@@ -430,7 +435,7 @@ ui <- fluidPage(
                         em('Source and More Information.'),
                         tags$li('Data description: ', a(href = 'https://www.census.gov/programs-surveys/acs', 'American Community Survey', target="_blank")),
                         tags$li('Data source: ', a(href = 'https://factfinder.census.gov/faces/affhelp/jsf/pages/metadata.xhtml?lang=en&type=table&id=table.en.ACS_17_5YR_B28002', 'Table B28002 - Presence and types of internet subscriptions in household', target="_blank")))),
-    column(3, wellPanel(strong('Microsoft Airband Initiative: Broadband Usage'),
+    column(3, wellPanel(strong('Microsoft (MS) Airband Initiative: Broadband Usage'),
                         p(),
                         em('Description.'),
                         br('Microsoft broadband data come from the company’s one-time initiative to collect data on broadband coverage using customer access as part of the Airband Initiative. 
@@ -460,7 +465,7 @@ ui <- fluidPage(
                         tags$li('Data file used: ', a(href = 'https://www.ers.usda.gov/webdocs/DataFiles/53251/ruralurbancodes2013.xls?v=0', 'Urban-Rural Continuum Codes 2013', target="_blank"))))
    ),
   hr(),
-  fluidRow(width = 12,
+  fluidRow(width = 12, style = "margin: 20px",
            column(2,
                   h2('Map Selector'),
                   selectInput("State", "State", choices = state.abb, selected = 'AL', multiple = FALSE,
@@ -475,19 +480,20 @@ ui <- fluidPage(
            )
   ),
   hr(),
-  fluidRow(width = 12,
+  fluidRow(width = 12, style = "margin: 20px",
            column(12, 
                   h2('Table of Measures'),
                   DT::dataTableOutput('table')
            )
   ),
   hr(),
-  fluidRow(width = 12,
-           column(6,
-                  h2('Acknowledgments')
-           ),
-           column(6,
-                  h2('Contact'))
+  fluidRow(width = 12, style = "margin: 20px",
+           column(12, align = 'center',
+                  h2('Contact'),
+                  br(a(href = 'https://biocomplexity.virginia.edu/joshua-goldstein', 'Joshua Goldstein'), 'and', a(href = 'https://biocomplexity.virginia.edu/teja-pristavec', 'Teja Pristavec')),
+                  br('University of Virginia, Biocomplexity Institute and Initiative'),
+                  br(a(href = 'https://biocomplexity.virginia.edu/social-decision-analytics', 'Social and Decision Analytics Division', target = '_blank'))
+                  )
            ),
   hr()
 )
