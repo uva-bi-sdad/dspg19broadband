@@ -380,18 +380,18 @@ ui <- fluidPage(
            column(1),
            column(10,
                   em('This dashboard was created as part of the Data Science for Public Good program in the Social and Decision Analytics Division of the Biocomplexity Institute and Initiative
-                      at the University of Virginia, in partnership with the United States Department of Agriculture Economic Research Service.'),
+                      at the University of Virginia, in partnership with the US Department of Agriculture Economic Research Service.'),
                   p(),
                   br('Internet at broadband speeds—defined as 25mbps download and 3mbps upload—is still not available to many Americans. However, estimates differ on how many individuals are 
-                     without access to broadband and thus limited in their ability to participate in today’s increasingly online world. To better understand US broadband coverage and where 
+                     without access to broadband and thus are limited in their ability to participate in today’s increasingly online world. To better understand US broadband coverage and where 
                      estimates disagree, our Data Science for Public Good team set out to examine three publicly available broadband data sources: the Federal Communications Commission (FCC)
-                     data, American Community Survey (ACS) data, and Microsoft (MS) Airband Initiative data. Our aims were to understand the extent of coverage according to each dataset, to examine 
+                     data, American Community Survey (ACS) data, and Microsoft (MS) Airband Initiative data. Our aims are to understand the extent of coverage according to each dataset, to examine 
                      discrepancies between the ACS and Microsoft with FCC data as the source used for policy and funding decision-making, and to address these aims with particular attention to rural areas.'),
                   p(),
-                  br('This dashboard visualizes discrepancies between FCC-reported broadband availability and ACS-reported broadband subscription at census block group and census tract levels,
-                     and the discrepancies between FCC-reported broadband availability and MS-reported broadband usage at the county level. Using the map selector allows filtering by state,
+                  tags$b('This dashboard visualizes discrepancies between FCC-reported broadband availability and ACS-reported broadband subscription at census block group and census tract levels,
+                     and the discrepancies between FCC-reported broadband availability and MS-reported broadband usage at the county level.'), ('Using the map selector allows filtering by state,
                      level of geography, and urban status. Hovering over each area on the resulting map displays information about the geography, land area, population, urban status, and broadband coverage.
-                     Detailed descriptions of our data sources and measures are available below.'),
+                     Detailed data sources and measure descriptions are available below.'),
                   p(),
                   br('[Once the Sage brief is published, we will link to it here.]')
             ),
@@ -406,14 +406,14 @@ ui <- fluidPage(
                         p(),
                         em('Description.'),
                         br('The FCC collects broadband availability and subscription data from providers using Form 477 every six months. Facilities-based providers of broadband connections to end-users 
-                          are required to report information on broadband deployment and subscriptions, including whether fixed broadband connection is available in a census block. Data is available 
+                          are required to report information on broadband deployment and subscriptions, including whether fixed broadband connection is available in a census block. Data are available 
                           at multiple time points and can be aggregated from block group to census tract and county levels. '),
                         p(),
-                        em('How We Measured Broadband Availability.'),
-                        br('We used FCC data from December 2015 at census block group and census tract level for comparisons with ACS, and at county level for comparisons with Microsoft. Our
-                           measure of broadband availability indicates the percent of the population in a given geographic unit (census block, census tract, or county) with access to at least one 
-                           broadband provider offering at least a 25 advertised download speed. We used FCC provider and maximum advertised download speed information 
-                           and ACS 2013-17 (5-year) population estimates to calculate the percent of the population in a given geography with broadband access.'),
+                        em('How We Measure Broadband Availability.'),
+                        br(), tags$b('Our measure of broadband availability indicates the percent of the population in a given geographic unit (census block, census tract, or county) with access to at least one 
+                           broadband provider offering at least a 25 advertised download speed.'), ('We use FCC provider and maximum advertised download speed information from December 2015 (at census block 
+                           group and census tract level for comparisons with ACS, and at county level for comparisons with Microsoft), and ACS 2013-17 (5-year) population estimates to calculate the percent 
+                           of the population in a given geography with broadband access.'),
                         p(),
                         em('Source and More Information.'),
                         tags$li('Data description: ', a(href = 'https://www.fcc.gov/general/explanation-broadband-deployment-data', 'Broadband deployment data explanation', target="_blank")),
@@ -426,11 +426,11 @@ ui <- fluidPage(
                           including internet access. Contrary to the FCC provider-reported data, the ACS relies on household head self-reports. Broadband estimates became available for the first time 
                           at the census block level in its 2013-17 (5-year) data, which we used in our analyses.'),
                         p(),
-                        em('How We Measured Broadband Subscription.'),
-                        br('We used estimates from ACS 2013-17 (5-year) data at census block group and census tract levels for comparisons with FCC. We obtained broadband subscription estimates from ACS
-                            table B28002, which contains information on the presence and types of internet subscriptions in households. Our measure of broadband subscription indicates the
-                            percent of census block group or tract households that self-report having access to any kind of broadband connection, excluding satellite and cellular. To calculate the metric, 
-                            we divided the number of households reporting such access by the total population in a given geographic unit.'),
+                        em('How We Measure Broadband Subscription.'),
+                        br(), tags$b(' Our measure of broadband subscription indicates the percent of census block group or tract households that self-reports having access to any kind of broadband connection, 
+                        excluding satellite and cellular.'), ('We obtain broadband subscription estimates from ACS 2013-17 (5-year) data table B28002, which contains information on the presence and 
+                        types of internet subscriptions in households. We use estimates at census block group and census tract levels for comparisons with FCC. To calculate the metric, 
+                        we divide the number of households reporting such access by the total population in a given geographic unit.'),
                         p(),
                         em('Source and More Information.'),
                         tags$li('Data description: ', a(href = 'https://www.census.gov/programs-surveys/acs', 'American Community Survey', target="_blank")),
@@ -439,13 +439,13 @@ ui <- fluidPage(
                         p(),
                         em('Description.'),
                         br('Microsoft broadband data come from the company’s one-time initiative to collect data on broadband coverage using customer access as part of the Airband Initiative. 
-                          Contrary to FCC and ACS data, Microsoft data is neither provider- nor consumer-reported; instead, the company analyzed its server logs when electronic devices downloaded 
+                          Contrary to FCC and ACS data, Microsoft data are neither provider- nor consumer-reported; instead, the company analyzed its server logs when electronic devices downloaded 
                           Microsoft Windows and Office updates, accessed Microsoft’s Bing search, or used Xbox gaming consoles. Microsoft aggregated their 2018 data and made them available at the county level.'),
                         p(),
-                        em('How We Measured Broadband Usage.'),
-                        br('We used Microsoft data from 2018 at county level for comparisons with FCC. Our measure of broadband usage indicates the proportion of county population that used
-                           Microsoft services (e.g., used Bing.com, downloaded Microsoft updates, or used Xbox) at 25 mbps download speeds, according to Microsoft server logs. Microsoft performed the calculation of
-                           population proportions and aggregation to county level.'),
+                        em('How We Measure Broadband Usage.'),
+                        br(), tags$b('Our measure of broadband usage indicates the proportion of county population that uses Microsoft services (e.g., uses Bing.com, downloads Microsoft updates, or uses Xbox) at 
+                        25 mbps download speeds, according to Microsoft server logs.'), ('We use Microsoft data from 2018 at county level for comparisons with FCC; Microsoft performed the calculation of 
+                        population proportions and aggregation to county level.'),
                         p(),
                         em('Source and More Information.'),
                         tags$li('Data report: ', a(href = 'https://news.microsoft.com/rural-broadband/', 'Microsoft Airband: An update on connecting rural America', target="_blank")),
@@ -457,8 +457,8 @@ ui <- fluidPage(
                            the latest available data from 2013. The nine RUCC codes consist of three metro and six nonmetro categories. Metro categories are designated depending on metro area population size, 
                            and nonmetro codes are designated based on degree of urbanization and metro area adjecency.'),
                         p(),
-                        em('How We Measured Urbanicity.'),
-                        br('We used 2013 RUCC data to measure area urban status. We collapsed RUCC codes 1 through 6 to indicate urban (metro) status, and codes 7 through 9 to indicate rural (nonmetro) status.'),
+                        em('How We Measure Urbanicity.'),
+                        br('We use 2013 RUCC data to measure area urban status. We collapse RUCC codes 1 through 6 to indicate urban (metro) status, and codes 7 through 9 to indicate rural (nonmetro) status.'),
                         p(),
                         em('Source and More Information.'),
                         tags$li('Data description: ', a(href = 'https://www.ers.usda.gov/data-products/rural-urban-continuum-codes.aspx', 'Urban-Rural Continuum Codes', target="_blank")),
@@ -474,7 +474,10 @@ ui <- fluidPage(
                               selected = 'County', multiple = FALSE,
                               selectize = TRUE, width = NULL, size = NULL),
                   selectInput("R_U", "Urban Status", c("Rural", "Urban", "All"), selected = 'All', multiple = FALSE,
-                              selectize = TRUE, width = NULL, size = NULL)
+                              selectize = TRUE, width = NULL, size = NULL),
+                  p(),
+                  em('County-level maps visualize a FCC broadband availability and MS broadband usage comparison. Census tract and census block group-level maps visualize a
+                     FCC broadband availability and ACS broadband subscription comparison.')
            ),
            column(10, leafletOutput("mymap", height = 550, width = "100%")
            )
@@ -488,7 +491,11 @@ ui <- fluidPage(
   ),
   hr(),
   fluidRow(width = 12, style = "margin: 20px",
-           column(12, align = 'center',
+           column(6, align = 'center',
+                  h2('Acknowledgments'),
+                  br('We would like to thank our Data Science for Public Good program participants -- Kateryna Savchyn, Sarah McDonald, and Raghav Sawhney -- for their valuable contributions to this project.')
+           ),
+           column(6, align = 'center',
                   h2('Contact'),
                   br(a(href = 'https://biocomplexity.virginia.edu/joshua-goldstein', 'Joshua Goldstein'), 'and', a(href = 'https://biocomplexity.virginia.edu/teja-pristavec', 'Teja Pristavec')),
                   br('University of Virginia, Biocomplexity Institute and Initiative'),
