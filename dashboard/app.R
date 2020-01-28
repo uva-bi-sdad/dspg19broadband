@@ -368,8 +368,8 @@ server <- function(input, output, session){
 
 ui <- fluidPage(
   theme = shinytheme("cosmo"),
+  # theme = "bootstrap.css",
   #shinythemes::themeSelector(),
-  #theme = "bootstrap.css",
   title = "Comparing US Broadband Availability, Subscription, and Usage",
   headerPanel(img(src = 'logo.png', class = 'topimage', width = '20%', style = 'display: block; margin-left: auto; margin-right: auto;')),
   fluidRow(width = 12, 
@@ -413,7 +413,7 @@ ui <- fluidPage(
                         br('We used FCC data from December 2015 at census block group and census tract level for comparisons with ACS, and at county level for comparisons with Microsoft. Our
                            measure of broadband availability indicates the percent of the population in a given geographic unit (census block, census tract, or county) with access to at least one 
                            broadband provider offering at least a 25 advertised download speed. We used FCC provider and maximum advertised download speed information 
-                           and ACS population estimates to calculate the percent of the population in a given geography with broadband access.'),
+                           and ACS 2013-17 (5-year) population estimates to calculate the percent of the population in a given geography with broadband access.'),
                         p(),
                         em('Source and More Information.'),
                         tags$li('Data description: ', a(href = 'https://www.fcc.gov/general/explanation-broadband-deployment-data', 'Broadband deployment data explanation', target="_blank")),

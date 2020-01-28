@@ -9,16 +9,16 @@ library(IRanges)
 
 # Need two-column dataframes with nothing else
 test_acs <- data %>% select(bbandmin, bbandmax) %>% 
-                     st_set_geometry(NULL)
-                    
+  st_set_geometry(NULL)
+
 test_fcc10 <- data %>% select(conn10min, conn10max) %>% 
-                       st_set_geometry(NULL)
+  st_set_geometry(NULL)
 
 test_fcc200 <- data %>% select(conn200min, conn200max) %>% 
-                        st_set_geometry(NULL)
+  st_set_geometry(NULL)
 
 test_fcc <- data %>% select(connmin, connmax) %>% 
-                        st_set_geometry(NULL)
+  st_set_geometry(NULL)
 
 # Can only work with whole numbers (multiply to preserve all decimals)
 startacs <- test_acs$bbandmin*10000000
@@ -122,10 +122,10 @@ data_int <- data_int %>% mutate(urban_fcc200 = case_when(acs_within_fcc200 == 0 
                                                          acs_within_fcc200 == 1 & urbanicity == "Micropolitan" ~ "Micropolitan", 
                                                          acs_within_fcc200 == 1 & urbanicity == "Metropolitan" ~ "Metropolitan"),
                                 urban_fcc10 = case_when(acs_within_fcc10 == 0 ~ NA_character_,
-                                                         acs_within_fcc10 == 1 & urbanicity == "Rural" ~ "Rural", 
-                                                         acs_within_fcc10 == 1 & urbanicity == "Small town" ~ "Small town", 
-                                                         acs_within_fcc10 == 1 & urbanicity == "Micropolitan" ~ "Micropolitan", 
-                                                         acs_within_fcc10 == 1 & urbanicity == "Metropolitan" ~ "Metropolitan"),
+                                                        acs_within_fcc10 == 1 & urbanicity == "Rural" ~ "Rural", 
+                                                        acs_within_fcc10 == 1 & urbanicity == "Small town" ~ "Small town", 
+                                                        acs_within_fcc10 == 1 & urbanicity == "Micropolitan" ~ "Micropolitan", 
+                                                        acs_within_fcc10 == 1 & urbanicity == "Metropolitan" ~ "Metropolitan"),
                                 urban_any = case_when(acs_within_fcc == 0 ~ NA_character_,
                                                       acs_within_fcc == 1 & urbanicity == "Rural" ~ "Rural", 
                                                       acs_within_fcc == 1 & urbanicity == "Small town" ~ "Small town", 
@@ -328,22 +328,22 @@ round(prop.table(table(data_int$urbanicity, data_int$acs_within_fcc), margin = 1
 # States with the highest proportion of congruent tracts
 statesmax <- data_int %>% mutate(acs_within_fcc = as.numeric(acs_within_fcc),
                                  acs_within_fcc = acs_within_fcc - 1) %>%
-                          group_by(State) %>% 
-                          transmute(NAME.y = NAME.y,
-                                    acs_within_fcc = acs_within_fcc,
-                                    tractnumber = n(),
-                                    tractcong = sum(acs_within_fcc),
-                                    tractcongprop = tractcong/tractnumber) %>%
-                          st_set_geometry(NULL)
+  group_by(State) %>% 
+  transmute(NAME.y = NAME.y,
+            acs_within_fcc = acs_within_fcc,
+            tractnumber = n(),
+            tractcong = sum(acs_within_fcc),
+            tractcongprop = tractcong/tractnumber) %>%
+  st_set_geometry(NULL)
 statesmax <- statesmax %>% select(State, tractcongprop) %>% 
-                           unique() %>%
-                           arrange(desc(tractcongprop))
+  unique() %>%
+  arrange(desc(tractcongprop))
 head(statesmax, 10)
 tail(statesmax, 10)
 
 # Counties with the highest proportion of congruent tracts
 countiesmax <- data_int %>% mutate(acs_within_fcc = as.numeric(acs_within_fcc),
-                                 acs_within_fcc = acs_within_fcc - 1) %>%
+                                   acs_within_fcc = acs_within_fcc - 1) %>%
   group_by(County) %>% 
   transmute(State = State,
             acs_within_fcc = acs_within_fcc,
@@ -355,9 +355,9 @@ countiesmax <- countiesmax %>% select(State, County, tractcongprop) %>%
   unique()
 
 countiesmax <- countiesmax %>% group_by(State) %>%
-                               mutate(countiesnumber = n()) %>%
-                               ungroup() %>%
-                               arrange(desc(tractcongprop))
+  mutate(countiesnumber = n()) %>%
+  ungroup() %>%
+  arrange(desc(tractcongprop))
 
 ggplot(countiesmax, aes(x = tractcongprop)) +
   geom_histogram(bins = 15) +
@@ -366,11 +366,11 @@ ggplot(countiesmax, aes(x = tractcongprop)) +
 
 # Which counties are made up 100% by tracts with congruent estimates? Which states are they in?
 countiesmax_1 <- countiesmax %>% 
-                    filter(tractcongprop == 1) %>%
-                    group_by(State) %>%
-                    mutate(nperstate = n())  %>%
-                    ungroup() %>%
-                    arrange(desc(nperstate))
+  filter(tractcongprop == 1) %>%
+  group_by(State) %>%
+  mutate(nperstate = n())  %>%
+  ungroup() %>%
+  arrange(desc(nperstate))
 
 countiesmax_1_table <- countiesmax_1 %>% select(State, nperstate) %>% unique()
 

@@ -28,7 +28,7 @@ acsvars <- c("B28002_001", "B28002_007")
 
 # Get tract-level variables from ACS 2013-2017 (5-year)
 acs <- get_acs(geography = "tract", state = state_fips[1], variables = acsvars, year = 2017, survey = "acs5", cache_table = TRUE, output = "wide", geometry = TRUE,
-                   keep_geo_vars = TRUE)
+               keep_geo_vars = TRUE)
 for(i in 2:length(state_fips)){
   tmp <- get_acs(geography = "tract", state = state_fips[i], variables = acsvars, year = 2017, survey = "acs5", cache_table = TRUE, output = "wide", geometry = TRUE,
                  keep_geo_vars = TRUE)
@@ -176,7 +176,7 @@ data <- data %>% mutate(urbanicity = case_when((primRUCA == 1 | primRUCA == 2 | 
                                                (primRUCA == 10) ~ "Rural",
                                                (primRUCA == 99 | is.na(primRUCA)) ~ NA_character_))
 data$urbanicity <- factor(data$urbanicity, levels = c("Rural", "Small town", "Micropolitan", "Metropolitan"))
-         
+
 # Switch to intervals file here.               
 
 #
@@ -189,10 +189,10 @@ data <- data %>% mutate(iswithin0 = ifelse((bband >= conn10min & bband <= conn10
                         iswithin10 = ifelse((bband >= (conn10min + (10*conn10min)/100) & bband <= (conn10max + (10*conn10max)/100)) & iswithin0 == 0 & iswithin5 == 0, 1, 0),
                         iswithin15 = ifelse((bband >= (conn10min + (15*conn10min)/100) & bband <= (conn10max + (15*conn10max)/100)) & iswithin0 == 0 & iswithin5 == 0 & iswithin10 == 0, 1, 0),
                         cats = case_when(iswithin0 == 1 & iswithin5 == 0 & iswithin10 == 0 & iswithin15 == 0 ~ "ACS within exact FCC range",
-                                        iswithin0 == 0 & iswithin5 == 1 & iswithin10 == 0 & iswithin15 == 0 ~ "ACS within 5% FCC range",
-                                        iswithin0 == 0 & iswithin5 == 0 & iswithin10 == 1 & iswithin15 == 0 ~ "ACS within 10% FCC range",
-                                        iswithin0 == 0 & iswithin5 == 0 & iswithin10 == 0 & iswithin15 == 1 ~ "ACS within 15% FCC range",
-                                        iswithin0 == 0 & iswithin5 == 0 & iswithin10 == 0 & iswithin15 == 0 ~ "ACS outside FCC range"))
+                                         iswithin0 == 0 & iswithin5 == 1 & iswithin10 == 0 & iswithin15 == 0 ~ "ACS within 5% FCC range",
+                                         iswithin0 == 0 & iswithin5 == 0 & iswithin10 == 1 & iswithin15 == 0 ~ "ACS within 10% FCC range",
+                                         iswithin0 == 0 & iswithin5 == 0 & iswithin10 == 0 & iswithin15 == 1 ~ "ACS within 15% FCC range",
+                                         iswithin0 == 0 & iswithin5 == 0 & iswithin10 == 0 & iswithin15 == 0 ~ "ACS outside FCC range"))
 data$cats <- factor(data$cats, levels = c("ACS within exact FCC range", "ACS within 5% FCC range", "ACS within 10% FCC range", "ACS within 15% FCC range", "ACS outside FCC range"))
 
 head(data)
@@ -259,15 +259,15 @@ plot_alaska <- ggplot(data = alaska) +
 # Plot all
 plot_main +
   annotation_custom(grob = ggplotGrob(plot_alaska),
-    xmin = -3350000,
-    xmax = -3350000 + (1600000 - (-2400000))/1.8,
-    ymin = -2450000,
-    ymax = -2450000 + (2500000 - 200000)/1.8) +
+                    xmin = -3350000,
+                    xmax = -3350000 + (1600000 - (-2400000))/1.8,
+                    ymin = -2450000,
+                    ymax = -2450000 + (2500000 - 200000)/1.8) +
   annotation_custom(grob = ggplotGrob(plot_hawaii),
-    xmin = -1700000,
-    xmax = -1700000 + (-154 - (-161))*230000,
-    ymin = -2450000,
-    ymax = -2450000 + (23 - 18)*230000)
+                    xmin = -1700000,
+                    xmax = -1700000 + (-154 - (-161))*230000,
+                    ymin = -2450000,
+                    ymax = -2450000 + (23 - 18)*230000)
 
 
 #
