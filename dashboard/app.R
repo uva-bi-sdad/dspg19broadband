@@ -493,7 +493,7 @@ ui <- fluidPage(
   fluidRow(width = 12, style = "margin: 20px",
            column(6, align = 'center',
                   h2('Acknowledgments'),
-                  br('We would like to thank our Data Science for Public Good program participants -- Kateryna Savchyn, Sarah McDonald, and Raghav Sawhney -- for their valuable contributions to this project.')
+                  br('We would like to thank our Data Science for Public Good program participants -- ', a(href = 'https://www.linkedin.com/in/kateryna-savchyn/', 'Kateryna Savchyn'), ',', a(href = 'https://www.linkedin.com/in/sarahmcdnld', 'Sarah McDonald'), ', and ', a(href = 'https://www.linkedin.com/in/raghavsawhney96/', 'Raghav Sawhney'), '-- for their valuable contributions to this project.')
            ),
            column(6, align = 'center',
                   h2('Contact'),
@@ -502,7 +502,11 @@ ui <- fluidPage(
                   br(a(href = 'https://biocomplexity.virginia.edu/social-decision-analytics', 'Social and Decision Analytics Division', target = '_blank'))
                   )
            ),
-  hr()
+  hr(),
+  fluidRow(width = 12, style = "margin: 20px",
+           column(12, align = 'center',
+                  em('Last updated: February 2020'))
+           )
 )
 
 shinyApp(ui = ui, server = server)
