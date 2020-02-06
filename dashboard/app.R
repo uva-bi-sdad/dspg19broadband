@@ -188,7 +188,7 @@ make_state_map <- function(state, geography, r_u){
     leg <- c("0%-20%", "21%-40%", "41%-60%", "61%-80%", "81%-100%")  
     m <- addLegend(m,
                    position = "bottomleft", colors = cl, values = ~(abs(round(data$availability_cons*100 - data$B28002_007_per, 1))),
-                   title = "Broadband Coverage Discrepancy<br>(FCC Availability - ACS Subscription)",
+                   title = "Broadband Coverage Discrepancy<br>(% FCC Availability - % ACS Subscription)",
                    opacity = 1, labels = leg)
     m
     
@@ -264,7 +264,7 @@ make_state_map <- function(state, geography, r_u){
     leg <- c("0%-20%", "21%-40%", "41%-60%", "61%-80%", "81%-100%")
     m <- addLegend(m,
                    position = "bottomleft", colors = cl, values = ~(abs(round(availability_adv*100 - B28002_007_per, 1))),
-                   title = "Broadband Coverage Discrepancy<br>(FCC Availability - ACS Subscription)",
+                   title = "Broadband Coverage Discrepancy<br>(% FCC Availability - % ACS Subscription)",
                    opacity = 1, labels = leg)
     
   } else if (geography == 'County') {
@@ -342,7 +342,7 @@ make_state_map <- function(state, geography, r_u){
     
     m <- addLegend(m,
                    position = "bottomleft", colors = cl, values = ~(abs(round(availability_adv*100 - BROADBAND.USAGE*100,  1))),
-                   title = "Broadband Coverage Discrepancy<br>(FCC Availability - MS Usage)",
+                   title = "Broadband Coverage Discrepancy<br>(% FCC Availability - % MS Usage)",
                    opacity = 0.7, labels = leg)
   }
 }
@@ -450,7 +450,7 @@ ui <- fluidPage(
                         em('Source and More Information.'),
                         tags$li('Data report: ', a(href = 'https://news.microsoft.com/rural-broadband/', 'Microsoft Airband: An update on connecting rural America', target="_blank")),
                         tags$li('Data request: ', a(href = 'https://forms.office.com/Pages/ResponsePage.aspx?id=v4j5cvGGr0GRqy180BHbRxi63BqtSQBHm4t78vwTzcZUNkFKV04xMEVDN0RMNkxTWkVERVMyNlZHViQlQCN0PWcu', 'Request Microsoft Airband data', target="_blank")))),
-    column(3, wellPanel(strong('Economic Research Service (ERS) Urban-Ruran Continuum Codes (RUCC): Urbanicity'),
+    column(3, wellPanel(strong('Economic Research Service (ERS) Urban-Rural Continuum Codes (RUCC): Urbanicity'),
                         p(),
                         em('Description.'),
                         br('US Department of Agriculture’s Economic Research Service provides RUCC codes to characterize urbanicity at county level. The agency updates RUCC codes at each decennial census, with 
