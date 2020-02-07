@@ -393,7 +393,7 @@ ui <- fluidPage(
                      level of geography, and urban status. Hovering over each area on the resulting map displays information about the geography, land area, population, urban status, and broadband coverage.
                      Detailed data sources and measure descriptions are available below.'),
                   p(),
-                  br('[Once the Sage brief is published, we will link to it here.]')
+                  br('You can download the accompanying project poster',  a(href = 'https://github.com/uva-bi-sdad/dspg19broadband/files/4167827/BroadbandPoster.pdf', 'here.'), 'A policy-oriented brief is also forthcoming.')
             ),
            column(1)
   ),
