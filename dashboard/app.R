@@ -531,7 +531,7 @@ ui <- fluidPage(
                                         p(),
                                         p(tags$b("Internet connectivity is a crucial factor in access to services."), 
                                           "In a related project, we explore internet connectivity infrastructure as barriers to remote work, education, and mental health care."),
-                                        p("We invite you to explore our", a(href = 'https://bband.policy-analytics.net', 'connectivity infrastructure as barrier to access dashboard.', target = "_blank"), 
+                                        p("We invite you to explore our", a(href = 'http://gates.policy-analytics.net', 'connectivity infrastructure as barrier to access dashboard.', target = "_blank"), 
                                     "The dashboard relative comparisons of access between counties within states. It highlighting areas where due to low internet connectivity, workers may have difficulty working remotely, where youth could
                                     face barriers to participating in online education, and where county residents may have high need but low access to telemental health services. 
                                     It allows extension professionals and policy-makers in Iowa, Oregon, and Virginia to make informed decisions about interventions and resource allocation
@@ -539,7 +539,7 @@ ui <- fluidPage(
                                       )
                                ),
                                column(4,
-                                      a(href = "http://bband.policy-analytics.net", img(src = "conn.png", width = "100%", style = "text-align: left; border: solid 1px lightgrey;"), target = "_blank")
+                                      a(href = "http://gates.policy-analytics.net", img(src = "conn.png", width = "100%", style = "text-align: left; border: solid 1px lightgrey;"), target = "_blank")
                                )
                       )
              ),
