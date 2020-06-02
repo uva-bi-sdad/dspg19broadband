@@ -384,9 +384,6 @@ ui <- fluidPage(
            style = "padding-top:20px; padding-bottom:20px;",
            column(1),
            column(10,
-                  em('This dashboard was created as part of the Data Science for Public Good program in the Social and Decision Analytics Division of the Biocomplexity Institute and Initiative
-                     at the University of Virginia, in partnership with the US Department of Agriculture Economic Research Service.'),
-                  p(),
                   br('Internet at broadband speeds—defined as 25mbps download and 3mbps upload—is still not available to many Americans. However, estimates differ on how many individuals are 
                      without access to broadband and thus are limited in their ability to participate in today’s increasingly online world. To better understand US broadband coverage and where 
                      estimates disagree, our Data Science for Public Good team set out to examine three publicly available broadband data sources: the Federal Communications Commission (FCC)
